@@ -56,22 +56,6 @@ enum DateParameter {
     Year
 }
 
-//List of different temperature units
-enum TemperatureUnitList {
-    //% block="°C"
-    C,
-    //% block="°F"
-    F
-}
-
-//List of different pressure units
-enum PressureUnitList {
-    //% block="Pa"
-    Pa,
-    //% block="mBar"
-    mBar
-}
-
 /**
  * Kitronik Air Quality Board MakeCode Extension
  */
@@ -89,71 +73,6 @@ namespace kitronik_air_quality {
         brightness: number;
         start: number;
         _length: number;
-
-        /**
-         * Shows a rainbow pattern on all LEDs. 
-         * @param startHue the start hue value for the rainbow, eg: 1
-         * @param endHue the end hue value for the rainbow, eg: 360
-         */
-        //% subcategory="ZIP LEDs"
-        //% blockId="kitronik_air_quality_rainbow" block="%statusLEDs|show rainbow from %startHue|to %endHue" 
-        //% weight=94 blockGap=8
-        showRainbow(startHue: number = 1, endHue: number = 360) {
-            if (this._length <= 0) return;
-
-            startHue = startHue >> 0;
-            endHue = endHue >> 0;
-            const saturation = 100;
-            const luminance = 50;
-            const steps = this._length;
-            const direction = HueInterpolationDirection.Clockwise;
-
-            //hue
-            const h1 = startHue;
-            const h2 = endHue;
-            const hDistCW = ((h2 + 360) - h1) % 360;
-            const hStepCW = Math.idiv((hDistCW * 100), steps);
-            const hDistCCW = ((h1 + 360) - h2) % 360;
-            const hStepCCW = Math.idiv(-(hDistCCW * 100), steps);
-            let hStep: number;
-            if (direction === HueInterpolationDirection.Clockwise) {
-                hStep = hStepCW;
-            } else if (direction === HueInterpolationDirection.CounterClockwise) {
-                hStep = hStepCCW;
-            } else {
-                hStep = hDistCW < hDistCCW ? hStepCW : hStepCCW;
-            }
-            const h1_100 = h1 * 100; //we multiply by 100 so we keep more accurate results while doing interpolation
-
-            //sat
-            const s1 = saturation;
-            const s2 = saturation;
-            const sDist = s2 - s1;
-            const sStep = Math.idiv(sDist, steps);
-            const s1_100 = s1 * 100;
-
-            //lum
-            const l1 = luminance;
-            const l2 = luminance;
-            const lDist = l2 - l1;
-            const lStep = Math.idiv(lDist, steps);
-            const l1_100 = l1 * 100
-
-            //interpolate
-            if (steps === 1) {
-                this.setPixelRGB(0, hsl(h1 + hStep, s1 + sStep, l1 + lStep))
-            } else {
-                this.setPixelRGB(0, hsl(startHue, saturation, luminance));
-                for (let i = 1; i < steps - 1; i++) {
-                    const h = Math.idiv((h1_100 + i * hStep), 100) + 360;
-                    const s = Math.idiv((s1_100 + i * sStep), 100);
-                    const l = Math.idiv((l1_100 + i * lStep), 100);
-                    this.setPixelRGB(i, hsl(h, s, l));
-                }
-                this.setPixelRGB(steps - 1, hsl(endHue, saturation, luminance));
-            }
-            this.show();
-        }
 
         /** 
          * Create a range of LEDs.
@@ -481,41 +400,10 @@ namespace kitronik_air_quality {
 
     // ASCII Code to OLED 5x8 pixel character for display conversion
     let font: number[] = [];
+    // Set all non-printable characters [0-31] to be '0x0022d422'
     for (let fontCH = 0; fontCH < 32; fontCH++) {
         font[fontCH] = 0x0022d422
     }
-    /*font[0] = 0x0022d422;   // NUL (null) [non-printable]
-    font[1] = 0x0022d422;   // SOH (start of heading) [non-printable]
-    font[2] = 0x0022d422;   // STX (start of text) [non-printable]
-    font[3] = 0x0022d422;   // ETX (end of text) [non-printable]
-    font[4] = 0x0022d422;   // EOT (end of transmission) [non-printable]
-    font[5] = 0x0022d422;   // ENQ (enquiry) [non-printable]
-    font[6] = 0x0022d422;   // ACK (acknowledge) [non-printable]
-    font[7] = 0x0022d422;   // BEL (bell) [non-printable]
-    font[8] = 0x0022d422;   // BS (backspace) [non-printable]
-    font[9] = 0x0022d422;   // TAB (horizontal tab) [non-printable]
-    font[10] = 0x0022d422;  // LF (NL line feed, new line) [non-printable]
-    font[11] = 0x0022d422;  // VT (vertical tab) [non-printable]
-    font[12] = 0x0022d422;  // FF (NP form feed, new page) [non-printable]
-    font[13] = 0x0022d422;  // CR (carraige return) [non-printable]
-    font[14] = 0x0022d422;  // SO (shift out) [non-printable]
-    font[15] = 0x0022d422;  // SI (shift in) [non-printable]
-    font[16] = 0x0022d422;  // DLE (data link escape) [non-printable]
-    font[17] = 0x0022d422;  // DC1 (device control 1) [non-printable]
-    font[18] = 0x0022d422;  // DC2 (device control 2) [non-printable]
-    font[19] = 0x0022d422;  // DC2 (device control 3) [non-printable]
-    font[20] = 0x0022d422;  // DC4 (device control 4) [non-printable]
-    font[21] = 0x0022d422;  // NAK (negative acknowledge) [non-printable]
-    font[22] = 0x0022d422;  // SYN (synchronous idle) [non-printable]
-    font[23] = 0x0022d422;  // ETB (end of transmission block) [non-printable]
-    font[24] = 0x0022d422;  // CAN (cancel) [non-printable]
-    font[25] = 0x0022d422;  // EM (end of medium) [non-printable]
-    font[26] = 0x0022d422;  // SUB (substitute) [non-printable]
-    font[27] = 0x0022d422;  // ESC (escape) [non-printable]
-    font[28] = 0x0022d422;  // FS (file separator) [non-printable]
-    font[29] = 0x0022d422;  // GS (group separator) [non-printable]
-    font[30] = 0x0022d422;  // RS (record separator) [non-printable]
-    font[31] = 0x0022d422;  // US (unit separator) [non-printable]*/
     font[32] = 0x00000000;  // Space
     font[33] = 0x000002e0;  // !
     font[34] = 0x00018060;  // "
@@ -2026,8 +1914,7 @@ namespace kitronik_air_quality {
 
     let t_fine = 0                          // Intermediate temperature value used for pressure calculation
     export let ambientTemperature = 0       // Intermediate temperature value used for heater calculation
-    //export let ambPrevTemps = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]                 // Store the previous 60 temperature readings to calculate the ambient temperature during baseline burn-in
-    let ambTempPos = 0                      // Current position in the ambPrevTemps[] array
+    let ambTempPos = 0                      // Current position of the ambTemp measurement to store in EEPROM
     let ambTempFlag = false
 
     // Temperature compensation calculation: rawADC to degrees C (integer)
@@ -2356,6 +2243,8 @@ namespace kitronik_air_quality {
             setupGasSensor(300, 150)
         }
 
+        ambTempFlag = false
+
         let burnInReadings = 0
         let burnInData = 0
         let progress = 0
@@ -2385,7 +2274,7 @@ namespace kitronik_air_quality {
         }
         gasBaseline = (burnInData / 60)             // Find the mean gas resistance during the period to form the baseline
 
-        if (ambTempFlag == true) {
+        if (ambTempFlag) {
             let ambTotal = 0
             for (let i = 0; i < (ambTempPos + 1); i++) {
                 let ambTempVal = (readByte((13 * 128) + i) << 8) | (readByte((13 * 128) + i + 1))
