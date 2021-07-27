@@ -1,9 +1,7 @@
 /*
   Kitronik package for use with the Air Quality Board (www.kitronik.co.uk/5674)
   This package pulls in other packages to deal with the lower level work for:
-    Bit banging the WS2182 protocol
     Setting and reading a Real Time Clock chip
-    Reading from a BME280 Temperature, Humidity, Pressure sensor
 */
 
 /**
