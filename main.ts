@@ -3470,7 +3470,7 @@ namespace kitronik_air_quality {
     }
 
     /**
-     * Input data to be saved to the logger in string format. To save numbers, convert numbers to a string.
+     * Input information about the user and project in string format.
      * @param name of person carrying out data logging
      * @param subject area of the data logging project
      * @param year group of person carrying data logging (if school project)
@@ -3480,7 +3480,7 @@ namespace kitronik_air_quality {
     //% group="Setup"
     //% weight=80 blockGap=8
     //% blockId=kitronik_air_quality_project_info
-    //% block="add project info: Name %name|,||Subject %subject|, Year %year|, Class %group"
+    //% block="add project info: Name %name||Subject %subject| Year %year| Class %group"
     //% expandableArgumentMode="enabled" 
     //% inlineInputMode=inline
     export function addProjectInfo(name: string, subject?: string, year?: string, group?: string): void {
@@ -3580,13 +3580,13 @@ namespace kitronik_air_quality {
         drawRect(102, 7, 12, 35)
         for (let addr = (firstDataBlock * 128); addr < 131072; addr++) {
             progress = Math.round((addr / 131072) * 100)
-            if ((progress % 10) == 0) {
+            /*if ((progress % 10) == 0) {
                 drawLine(LineDirectionSelection.horizontal, progress, 13, 36)
                 drawLine(LineDirectionSelection.horizontal, progress, 13, 37)
                 drawLine(LineDirectionSelection.horizontal, progress, 13, 38)
                 drawLine(LineDirectionSelection.horizontal, progress, 13, 39)
                 drawLine(LineDirectionSelection.horizontal, progress, 13, 40)
-            }
+            }*/
 
             writeByte(0xFF, addr)
         }
