@@ -3255,19 +3255,19 @@ namespace kitronik_air_quality {
             storeTitles()
         }
 
-        /*logDate = readDate()
+        logDate = readDate()
         logTime = readTime()
         logTemp = readTemperature(tUnit)
         logPress = readPressure(pUnit)
         logHumid = humidityReading
         logIAQ = iaqScore
         logCO2 = eCO2Value
-        logLight = input.lightLevel()*/
+        logLight = input.lightLevel()
         
         if (incDate) {
             dataEntry = dataEntry + readDate() + delimiter
         }
-        /*if (incTime) {
+        if (incTime) {
             dataEntry = dataEntry + logTime + delimiter
         }
         if (incTemp) {
@@ -3287,7 +3287,7 @@ namespace kitronik_air_quality {
         }
         if (incLight) {
             dataEntry = dataEntry + logLight + delimiter
-        }*/
+        }
 
         writeBlock(dataEntry + "\r\n", firstDataBlock + entryNum)
 
