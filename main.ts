@@ -73,26 +73,11 @@ enum PressureUnitList {
 }
 
 /**
- * List of different CCS811 VOC Sensor Measurement Mode
- * Mode 1: Constant power, measure every 1s
- * Mode 2: Pulse heating, measure every 10s
- * Mode 3: Low power pulse heating, measure every 60s
- */
-enum VOCSensorModes {
-    //% block="1 second"
-    mode1 = 1,
-    //% block="10 seconds"
-    mode2 = 2,
-    //% block="60 seconds"
-    mode3 = 3
-}
-
-/**
  * Kitronik Air Quality Board MakeCode Extension
  */
 
 //% weight=100 color=#00A654 icon="\uf0c2" block="Air Quality"
-//% groups='["Control", "Show", "Draw", "Delete", "Advanced", "Set Time", "Set Date", "Read Time", "Read Date", "Alarm", "BME280", "CCS811", "Setup", "Measure", "Climate", "Air Quality", "General Inputs/Outputs", "Write", "Read," "Setup", "Add Data", "Transfer"]'
+//% groups='["Control", "Show", "Draw", "Delete", "Advanced", "Set Time", "Set Date", "Read Time", "Read Date", "Alarm", "Setup", "Measure", "Climate", "Air Quality", "General Inputs/Outputs", "Write", "Read," "Setup", "Add Data", "Transfer"]'
 namespace kitronik_air_quality {
     ////////////////////////////////
     //         ZIP LEDS           //
@@ -496,7 +481,10 @@ namespace kitronik_air_quality {
 
     // ASCII Code to OLED 5x8 pixel character for display conversion
     let font: number[] = [];
-    font[0] = 0x0022d422;   // NUL (null) [non-printable]
+    for (let fontCH = 0; fontCH < 32; fontCH++) {
+        font[fontCH] = 0x0022d422
+    }
+    /*font[0] = 0x0022d422;   // NUL (null) [non-printable]
     font[1] = 0x0022d422;   // SOH (start of heading) [non-printable]
     font[2] = 0x0022d422;   // STX (start of text) [non-printable]
     font[3] = 0x0022d422;   // ETX (end of text) [non-printable]
@@ -527,7 +515,7 @@ namespace kitronik_air_quality {
     font[28] = 0x0022d422;  // FS (file separator) [non-printable]
     font[29] = 0x0022d422;  // GS (group separator) [non-printable]
     font[30] = 0x0022d422;  // RS (record separator) [non-printable]
-    font[31] = 0x0022d422;  // US (unit separator) [non-printable]
+    font[31] = 0x0022d422;  // US (unit separator) [non-printable]*/
     font[32] = 0x00000000;  // Space
     font[33] = 0x000002e0;  // !
     font[34] = 0x00018060;  // "
