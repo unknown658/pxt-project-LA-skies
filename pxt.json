@@ -6,8 +6,7 @@
         "core": "*",
         "radio": "*",
         "microphone": "*",
-        "kitronik_RTC": "github:KitronikLtd/pxt-kitronik-rtc-base#v0.0.12",
-        "kitronik_BME280": "github:KitronikLtd/pxt-kitronik-bme280-base#v0.0.10"
+        "kitronik_RTC": "github:KitronikLtd/pxt-kitronik-rtc-base#v0.0.12"
     },
     "files": [
         "README.md",
