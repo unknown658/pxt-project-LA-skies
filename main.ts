@@ -3083,8 +3083,16 @@ namespace kitronik_air_quality {
     //% blockId=kitronik_air_quality_mem_write_byte 
     //% block="write byte %data|to memory address %addr"
     //% weight=100 blockGap=8
-    //% addr.min=0 addr.max=131071
+    //% addr.min=3072 addr.max=131071
+    //% blockHidden = true
     export function writeByte(data: any, addr: number): void {
+        if (addr < 3072) {
+            addr = 3072
+        }
+        if (addr > 131071) {
+            addr = 131071
+        }
+
         let buf = pins.createBuffer(3);                             // Create buffer for holding addresses & data to write
         let i2cAddr = 0
 
@@ -3111,8 +3119,15 @@ namespace kitronik_air_quality {
     //% blockId=kitronik_air_quality_mem_write_page 
     //% block="write %data|to memory page %page"
     //% weight=100 blockGap=8
-    //% page.min=0 addr.max=511
+    //% page.min=12 addr.max=511
+    //% blockHidden = true
     export function writePage(data: string, page: number): void {
+        if (page < 12) {
+            page = 12
+        }
+        if (page > 511) {
+            page = 511
+        }
         let dataLength = data.length
         let buf = pins.createBuffer(dataLength + 2);                  // Create buffer for holding addresses & data to write
         let i2cAddr = 0
@@ -3185,7 +3200,15 @@ namespace kitronik_air_quality {
     //% block="read byte from memory address %addr"
     //% weight=99 blockGap=8
     //% addr.min=0 addr.max=131071
+    //% blockHidden = true
     export function readByte(addr: number): number {
+        if (addr < 0) {
+            addr = 0
+        }
+        if (addr > 131071) {
+            addr = 131071
+        }
+
         let writeBuf = pins.createBuffer(2)                         // Create a buffer for holding addresses
         let readBuf = pins.createBuffer(1)                          // Create a buffer for storing read data
         let i2cAddr = 0
@@ -3206,46 +3229,6 @@ namespace kitronik_air_quality {
 
         return readData                                             // Return the variable so the data can be accessed
     }
-
-    /**
-     * Iterative Read - Page Read? Block Read? Output as a string
-     * @param addr is EEPROM address, eg: 0
-     */
-    //% subcategory="Memory"
-    //% group="Read"
-    //% blockId=kitronik_air_quality_mem_iterative_read
-    //% block="iterative read starting at memory address %addr"
-    //% weight=98 blockGap=8
-    //% addr.min=0 addr.max=131071
-    export function iterativeRead(addr: number): any {
-        let writeBuf = pins.createBuffer(2)                         // Create a buffer for holding addresses
-        let readBuf = pins.createBuffer(256)                        // Create a buffer for storing read data
-        let i2cAddr = 0
-        let dataArray = []
-
-        if ((addr >> 16) == 0) {                                    // Select the required address (A16 as 0 or 1)
-            i2cAddr = CAT24_I2C_BASE_ADDR                           // A16 = 0
-        }
-        else {
-            i2cAddr = CAT24_I2C_BASE_ADDR + 1                       // A16 = 1
-        }
-
-        writeBuf[0] = (addr >> 8) & 0xFF                            // Memory location bits a15 - a8
-        writeBuf[1] = addr & 0xFF                                   // Memory location bits a7 - a0
-        pins.i2cWriteBuffer(i2cAddr, writeBuf, false)               // Write to the address to prepare for read operation
-
-        readBuf = pins.i2cReadBuffer(i2cAddr, 256, false)           // Read the data at the correct address into the buffer
-        for (let j = 0; j < 256; j++) {
-            dataArray[j] = readBuf[j]
-        }
-        //let readData = readBuf[0]                                 // Store the data from the buffer as a variable
-
-        return dataArray                                            // Return the variable so the data can be accessed
-    }
-
-    /**
-     * Erase all data stored in memory
-     */
 
     ////////////////////////////////
     //       DATA LOGGING         //
@@ -3463,7 +3446,34 @@ namespace kitronik_air_quality {
         let kitronikHeader = "Kitronik Data Logger - Air Quality & Environmental Board - www.kitronik.co.uk\r\n"
         writeBlock(kitronikHeader, 21)
 
-        let headings = "Date;Time;Temperature;Pressure;Humidity;IAQ Score;eCO2;Light;\r\n"
+        let headings = ""
+
+        if (incDate) {
+            headings = headings + "Date" + delimiter
+        }
+        if (incTime) {
+            headings = headings + "Time" + delimiter
+        }
+        if (incTemp) {
+            headings = headings + "Temperature" + delimiter
+        }
+        if (incPress) {
+            headings = headings + "Pressure" + delimiter
+        }
+        if (incHumid) {
+            headings = headings + "Humidity" + delimiter
+        }
+        if (incIAQ) {
+            headings = headings + "IAQ Score" + delimiter
+        }
+        if (incCO2) {
+            headings = headings + "eCO2" + delimiter
+        }
+        if (incLight) {
+            headings = headings + "Light" + delimiter
+        }
+
+        headings = headings + "\r\n"
         writeBlock(headings, 23)
 
         writeTitles = true
@@ -3577,7 +3587,7 @@ namespace kitronik_air_quality {
     export function eraseData(): void {
         let progress = 0
         show("Erasing Memory...", 2, ShowAlign.Centre)
-        drawRect(102, 7, 12, 35)
+        //drawRect(102, 7, 12, 35)
         for (let addr = (firstDataBlock * 128); addr < 131072; addr++) {
             progress = Math.round((addr / 131072) * 100)
             /*if ((progress % 10) == 0) {
@@ -3590,8 +3600,9 @@ namespace kitronik_air_quality {
 
             writeByte(0xFF, addr)
         }
+        clear()
         show("Memory Erase Complete", 2, ShowAlign.Centre)
-        basic.pause(2000)
+        basic.pause(2500)
         clear()
     }
 
@@ -3636,41 +3647,5 @@ namespace kitronik_air_quality {
                 serial.writeString(data)
             }
         }
-    }
-
-    /**
-     * Send selected position the stored data via comms selected.
-     * If entered position is greater than the total number of enteries, the max entry position is outputted.
-     * @param position is the location of required data to be sent
-     */
-    //% subcategory="Data Logging"
-    //% group="Transfer"
-    //% weight=60 blockGap=8
-    //% blockId=kitronik_air_quality_send_selected
-    //% block="transmit data at entry %position"
-    //% position.min=1 position.max=100 position.defl=1
-    export function sendSelectedData(position: number): void {
-        if (comms == NONE) {
-            setDataForUSB()
-        }
-        if (storedList.length < position) {
-            position = storedList.length
-        }
-        let dataEntry = storedList[position - 1]
-
-        //serial.writeString(kitronikHeader)
-        //sendTitle()
-
-        if (entryNumber == true) {
-            let positionString = convertToText(position + 1)
-            if (positionString.length == 1)
-                positionString = "  " + positionString
-            else if (positionString.length == 2)
-                positionString = " " + positionString
-            serial.writeString(positionString + delimiter)
-        }
-
-        serial.writeString(dataEntry)
-        serial.writeString("\r\n")
     }
 }
