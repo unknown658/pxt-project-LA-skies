@@ -2038,7 +2038,7 @@ namespace kitronik_air_quality {
 
     let t_fine = 0                          // Intermediate temperature value used for pressure calculation
     export let ambientTemperature = 0       // Intermediate temperature value used for heater calculation
-    export let ambPrevTemps = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]                 // Store the previous 60 temperature readings to calculate the ambient temperature during baseline burn-in
+    //export let ambPrevTemps = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]                 // Store the previous 60 temperature readings to calculate the ambient temperature during baseline burn-in
     let ambTempPos = 0                      // Current position in the ambPrevTemps[] array
     let ambTempFlag = false
 
@@ -2056,7 +2056,11 @@ namespace kitronik_air_quality {
         // Change position in the ambPrevTemps[] array ready for next reading to be stored, overwriting the previous one in that position
         if (ambTempFlag == false) {
             if (ambTempPos < 59) {
-                ambPrevTemps[ambTempPos] = newAmbTemp   // Store latest temperature in ambient temperature array
+                let newAmbTemp_H = newAmbTemp >> 8
+                let newAmbTemp_L = newAmbTemp & 0xFF
+                writeByte(newAmbTemp_H, ((13 * 128) + ambTempPos))
+                writeByte(newAmbTemp_L, ((13 * 128) + ambTempPos + 1))
+                //ambPrevTemps[ambTempPos] = newAmbTemp   // Store latest temperature in ambient temperature array
                 ambTempPos++
             }
             else {
@@ -2395,10 +2399,12 @@ namespace kitronik_air_quality {
 
         if (ambTempFlag == true) {
             let ambTotal = 0
-            for (let i = 0; i < ambPrevTemps.length; i++) {
-                ambTotal += ambPrevTemps[i]
+            for (let i = 0; i < (ambTempPos + 1); i++) {
+                let ambTempVal = (readByte((13 * 128) + i) << 8) | (readByte((13 * 128) + i + 1))
+                ambTotal += ambTempVal
+                //ambTotal += ambPrevTemps[i]
             }
-            ambientTemperature = Math.trunc(ambTotal / ambPrevTemps.length)    // Calculate the ambient temperature as the mean of the 60 initial readings
+            ambientTemperature = Math.trunc(ambTotal / (ambTempPos + 1))    // Calculate the ambient temperature as the mean of the 60 initial readings
         }
 
         clearLine(4)
