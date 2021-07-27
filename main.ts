@@ -97,7 +97,7 @@ namespace kitronik_air_quality {
     ////////////////////////////////
     //         ZIP LEDS           //
     ////////////////////////////////
-
+    
     export class airQualityZIPLEDs {
         buf: Buffer;
         pin: DigitalPin;
@@ -2224,7 +2224,7 @@ namespace kitronik_air_quality {
     //% subcategory="Sensors"
     //% group="Setup"
     //% blockId=kitronik_air_quality_setup_gas_sensor
-    //% block="setup gas sensor||: temperature %targetTemp|, duration %heatDuration"
+    //% block="setup gas sensor||: temperature %targetTemp|°C, duration %heatDuration|ms"
     //% weight=100 blockGap=8
     //% targetTemp.min = 200 targetTemp.max = 400
     //% heatDuration.min = 0 heatDuration.max = 4032
@@ -2683,276 +2683,6 @@ namespace kitronik_air_quality {
                 eCO2Value = Math.trunc(eCO2Value + 1500)
             }
         }
-    }
-
-    ////////////////////////////////
-    //          BME280            //
-    ////////////////////////////////
-    /**
-    * Read Pressure from sensor as Number.
-    * Units for pressure are in Pa (Pascals) or mBar (millibar) according to selection
-    */
-    //% subcategory="Sensors"
-    //% group="BME280"
-    //% blockId=bme280_read_pressure
-    //% block="Read Pressure in %pressure_unit"
-    //% weight=85 blockGap=8
-    export function pressure(pressure_unit: PressureUnitList): number {
-        if (kitronik_BME280.initalised == false)
-            kitronik_BME280.secretIncantation()
-
-        kitronik_BME280.readRawReadings();
-        kitronik_BME280.convertReadings();
-
-        //Change pressure from Pascals to millibar
-        if (pressure_unit == PressureUnitList.mBar)
-            kitronik_BME280.pressureReading = + kitronik_BME280.pressureReading / 100
-
-        kitronik_BME280.pressureReading = Math.round(kitronik_BME280.pressureReading)
-
-        return kitronik_BME280.pressureReading;
-    }
-
-    /**
-    * Read Temperature from sensor as Number.
-    * Units for temperature are in °C (Celsius) or °F (Fahrenheit) according to selection
-    */
-    //% subcategory="Sensors"
-    //% group="BME280"
-    //% blockId="bme280_read_temperature"
-    //% block="Read Temperature in %temperature_unit"
-    //% weight=80 blockGap=8
-    export function temperature(temperature_unit: TemperatureUnitList): number {
-        if (kitronik_BME280.initalised == false)
-            kitronik_BME280.secretIncantation()
-
-        kitronik_BME280.readRawReadings();
-        kitronik_BME280.convertReadings();
-
-        //Change temperature from degrees C to degrees F
-        if (temperature_unit == TemperatureUnitList.F)
-            kitronik_BME280.temperatureReading = ((kitronik_BME280.temperatureReading * 18) + 320) / 10
-
-        kitronik_BME280.temperatureReading = Math.round(kitronik_BME280.temperatureReading)
-
-        return kitronik_BME280.temperatureReading;
-    }
-
-    /**
-    * Read Humidity from sensor as Number.
-    * Units for humidity are as a percentage
-    */
-    //% subcategory="Sensors"
-    //% group="BME280"
-    //% blockId=bme280_read_humidity
-    //% block="Read Humidity"
-    //% weight=75 blockGap=8
-    export function humidity(): number {
-        if (kitronik_BME280.initalised == false)
-            kitronik_BME280.secretIncantation()
-
-        kitronik_BME280.readRawReadings();
-        kitronik_BME280.convertReadings();
-        kitronik_BME280.humidityReading = Math.round(kitronik_BME280.humidityReading)
-        return kitronik_BME280.humidityReading;
-    }
-
-    ////////////////////////////////
-    //           CCS811           //
-    ////////////////////////////////
-
-    //CCS811 Register Addresses 
-    const CCS_CHIP_ADDR = 0x5B      // Chip address
-    const CCS_STATUS = 0x00         // Chip Status
-    const CCS_MEAS = 0x01           // Measure mode
-    const CCS_ALG_RESULT = 0x02     // Algorithm result data
-    const CCS_RAW = 0x03            // Raw ADC data
-    const CCS_ENV = 0x05            // Environmental data input (for temperature & humidity compensation) - ADD LATER
-    const CCS_THRESH = 0x10         // Thresholds for interrupts
-    const CCS_BASE = 0x11           // Baseline value
-    const CCS_HW_ID = 0x20          // Hardware ID (0x81)
-    const CCS_HW_VER = 0x21         // Hardware Version (0x1X)
-    const CCS_FW_BOOT_VER = 0x23    // Firmware Boot Version
-    const CCS_FW_APP_VER = 0x24     // Firmware Application Version
-    const CCS_INT_STATE = 0xA0      // Internal state
-    const CCS_ERROR = 0xE0          // Error ID
-    const CCS_APP_START = 0xF4      // Start application (transition from BOOT mode)
-    const CCS_RESET = 0xFF          // Software reset (0x11 0xE5 0x72 0x8A written in single sequence retruns device to Boot mode)
-
-    // nWAKE pin connection to micro:bit
-    const nWAKE_PIN = DigitalPin.P15
-
-    //Keep track of transitioning the sensor out of boot mode
-    let appStarted = false
-
-    /**
-    * Starts up the air quality sensor and sets the interval between measurments. 
-    * @param mode determines which of modes 1 - 3 the sensor will start in
-    */
-    //% subcategory="Sensors"
-    //% group="CCS811"
-    //% blockId=kitronik_air_quality_app_start
-    //% block="start air quality sensor measuring every %mode"
-    //% weight=100 blockGap=8
-    export function appStart(mode: VOCSensorModes): void {
-        // Wake the sensor ready for commands
-        pins.digitalWritePin(nWAKE_PIN, 0)
-
-        // Only run the start up code once, there is no need to transition out of boot mode again
-        if (!appStarted) {
-            pins.i2cWriteNumber(CCS_CHIP_ADDR, CCS_APP_START, NumberFormat.Int8LE)
-            appStarted = true
-        }
-
-        // Set the sensor into a particular measurement mode based on the user selection
-        switch (mode) {
-            case 1: {
-                writeCCSReg(CCS_MEAS, 0x10) // Mode 1
-                break;
-            }
-            case 2: {
-                writeCCSReg(CCS_MEAS, 0x20) // Mode 2
-                break;
-            }
-            case 3: {
-                writeCCSReg(CCS_MEAS, 0x30) // Mode 3
-                break;
-            }
-            default: {
-                writeCCSReg(CCS_MEAS, 0x30) // Mode 3
-                break;
-            }
-        }
-
-        // Put the sensor into sleep mode to reduce power consumption
-        pins.digitalWritePin(nWAKE_PIN, 1)
-    }
-
-    /**
-    * Returns the most recent TVOC measurement value as a number.
-    */
-    //% subcategory="Sensors"
-    //% group="CCS811"
-    //% blockId=kitronik_air_quality_read_tvoc
-    //% block="read TVOC level"
-    //% weight=90 blockGap=8
-    export function readTvoc(): number {
-        // Wake the sensor ready for commands
-        pins.digitalWritePin(nWAKE_PIN, 0)
-
-        // Read first 4 bytes of the Algorithm Results register
-        let algRes = readCCSReg(CCS_ALG_RESULT, NumberFormat.Int32BE)
-
-        // Mask off the bottom 2 bytes to just return the TVOC value
-        let tVOC = (algRes & 0x0000FFFF)
-
-        // Put the sensor into sleep mode to reduce power consumption
-        pins.digitalWritePin(nWAKE_PIN, 1)
-
-        return tVOC
-    }
-
-    /**
-    * Returns the most recent eCO2 measurement value as a number.
-    */
-    //% subcategory="Sensors"
-    //% group="CCS811"
-    //% blockId=kitronik_air_quality_read_co2
-    //% block="read eCO2 level"
-    //% weight=80 blockGap=8
-    export function readCo2(): number {
-        // Wake the sensor ready for commands
-        pins.digitalWritePin(nWAKE_PIN, 0)
-
-        // Read the first 2 bytes of the Algorithm Results register
-        let algRes = readCCSReg(CCS_ALG_RESULT, NumberFormat.UInt16BE)
-
-        // Put the sensor into sleep mode to reduce power consumption
-        pins.digitalWritePin(nWAKE_PIN, 1)
-
-        return algRes
-    }
-
-    /**
-    * Read the device error code to identify if there are any problems with the device.
-    */
-    //% subcategory="Sensors"
-    //% group="CCS811"
-    //% blockId=kitronik_air_quality_read_error
-    //% block="Read Device Error Code"
-    //% weight=3 blockGap=8
-    //% blockHidden=true
-    export function readError(): number {
-        // Wake the sensor ready for commands
-        pins.digitalWritePin(nWAKE_PIN, 0)
-
-        // Return Error of Device
-        let error = readCCSReg(CCS_ERROR, NumberFormat.Int8LE)
-
-        // Put the sensor into sleep mode to reduce power consumption
-        pins.digitalWritePin(nWAKE_PIN, 1)
-
-        return error
-    }
-
-    /**
-    * Read and return the device status.
-    */
-    //% subcategory="Sensors"
-    //% group="CCS811"
-    //% blockId=kitronik_air_quality_read_status
-    //% block="Read Device Status"
-    //% weight=2 blockGap=8
-    //% blockHidden=true
-    export function readStatus(): number {
-        // Wake the sensor ready for commands
-        pins.digitalWritePin(nWAKE_PIN, 0)
-
-        // Return status of Device
-        let status = readCCSReg(CCS_STATUS, NumberFormat.UInt8LE)
-
-        // Put the sensor into sleep mode to reduce power consumption
-        pins.digitalWritePin(nWAKE_PIN, 1)
-
-        return status
-    }
-
-    /**
-    * Read and return the device ID (helpful communication test).
-    */
-    //% subcategory="Sensors"
-    //% group="CCS811"
-    //% blockId=kitronik_air_quality_hardware_id
-    //% block="Hardware ID"
-    //% weight=1 blockGap=8
-    //% blockHidden=true
-    export function hardwareID(): number {
-        // Wake the sensor ready for commands
-        pins.digitalWritePin(nWAKE_PIN, 0)
-
-        let hardwareId = readCCSReg(CCS_HW_ID, NumberFormat.UInt8LE)
-
-        // Put the sensor into sleep mode to reduce power consumption
-        pins.digitalWritePin(nWAKE_PIN, 1)
-
-        return hardwareId
-    }
-
-    /**
-     * Writes a value to a register on the CCS811 Air Quality Sensor
-     */
-    function writeCCSReg(reg: number, val: number): void {
-        let test = reg << 8 | val
-        pins.i2cWriteNumber(CCS_CHIP_ADDR, reg << 8 | val, NumberFormat.Int16BE)
-    }
-
-    /**
-     * Reads a value from a register on the CCS811 Air Quality Sensor
-     */
-    function readCCSReg(reg: number, format: NumberFormat) {
-        pins.i2cWriteNumber(CCS_CHIP_ADDR, reg, NumberFormat.UInt8LE, false)
-        let val = pins.i2cReadNumber(CCS_CHIP_ADDR, format, false)
-        return val
     }
 
     ////////////////////////////////
@@ -3525,19 +3255,19 @@ namespace kitronik_air_quality {
             storeTitles()
         }
 
-        logDate = readDate()
+        /*logDate = readDate()
         logTime = readTime()
         logTemp = readTemperature(tUnit)
         logPress = readPressure(pUnit)
         logHumid = humidityReading
         logIAQ = iaqScore
         logCO2 = eCO2Value
-        logLight = input.lightLevel()
-
+        logLight = input.lightLevel()*/
+        
         if (incDate) {
-            dataEntry = dataEntry + logDate + delimiter
+            dataEntry = dataEntry + readDate() + delimiter
         }
-        if (incTime) {
+        /*if (incTime) {
             dataEntry = dataEntry + logTime + delimiter
         }
         if (incTemp) {
@@ -3557,7 +3287,7 @@ namespace kitronik_air_quality {
         }
         if (incLight) {
             dataEntry = dataEntry + logLight + delimiter
-        }
+        }*/
 
         writeBlock(dataEntry + "\r\n", firstDataBlock + entryNum)
 
@@ -3566,7 +3296,7 @@ namespace kitronik_air_quality {
 
         writeByte(entryNum_H, (12 * 128))           // Store the current entry number at first bytes of block 12
         writeByte(entryNum_L, ((12 * 128) + 1))
-
+        
         if (entryNum == 999) {
             dataFull = true
             entryNum = 0
