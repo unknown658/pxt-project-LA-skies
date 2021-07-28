@@ -1782,18 +1782,6 @@ namespace kitronik_air_quality {
         return pins.i2cReadNumber(CHIP_ADDRESS, NumberFormat.Int8BE);
     }
 
-    //function for reading register as unsigned 16 bit integer (little endian)
-    export function getUInt16LE(reg: number): number {
-        pins.i2cWriteNumber(CHIP_ADDRESS, reg, NumberFormat.UInt8BE);
-        return pins.i2cReadNumber(CHIP_ADDRESS, NumberFormat.UInt16LE);
-    }
-
-    //function for reading register as signed 16 bit integer (little endian)
-    export function getInt16LE(reg: number): number {
-        pins.i2cWriteNumber(CHIP_ADDRESS, reg, NumberFormat.UInt8BE);
-        return pins.i2cReadNumber(CHIP_ADDRESS, NumberFormat.Int16LE);
-    }
-
     // Function to convert unsigned ints to twos complement signed ints
     export function twosComp(value: number, bits: number): number {
         if ((value & (1 << (bits - 1))) != 0) {
@@ -2468,7 +2456,6 @@ namespace kitronik_air_quality {
             gasScore = gasScore * (100 - (humidityWeighting * 100))
         }
         else {
-            // TOO SIMPLE - gasScore = 100 - (humidityWeighting * 100)
             // Make sure that when gasOffset and humidityOffset are 0, iaqPercent is 95% - leaves room for cleaner air to be identified
             gasScore = Math.round(70 + (5 * ((gasResistance / gasBaseline) - 1)))
             if (gasScore > 75) {
