@@ -1932,30 +1932,6 @@ namespace kitronik_air_quality {
     }
 
     // Pressure compensation calculation: rawADC to Pascals (integer)
-    export function calcPressure(pressureADC: number): void {
-        let var1 = (t_fine >> 1) - 64000
-        let var2 = ((((var1 >> 2) * (var1 >> 2)) >> 11) * PAR_P6) >> 2
-        var2 = var2 + ((var1 * PAR_P5) << 1)
-        var2 = (var2 >> 2) + (PAR_P4 << 16)
-        var1 = (((((var1 >> 2) * (var1 >> 2)) >> 13) * (PAR_P3 << 5)) >> 3) + ((PAR_P2 * var1) >> 1)
-        var1 = var1 >> 18
-        var1 = ((32768 + var1) * PAR_P1) >> 15
-        pressureReading = 1048576 - pressureADC
-        pressureReading = ((pressureReading - (var2 >> 12)) * 3125)
-
-        if (pressureReading >= (1 << 30)) {
-            pressureReading = (pressureReading / var1) << 1
-        }
-        else {
-            pressureReading = (pressureReading << 1) / var1
-        }
-
-        var1 = (PAR_P9 * (((pressureReading >> 3) * (pressureReading >> 3)) >> 13)) >> 12
-        var2 = ((pressureReading >> 2) * PAR_P8) >> 13
-        let var3 = ((pressureReading >> 8) * (pressureReading >> 8) * (pressureReading >> 8) * PAR_P10) >> 17
-        pressureReading = pressureReading + ((var1 + var2 + var3 + (PAR_P7 << 7)) >> 4)
-    }
-
     export function intCalcPressure(pressureADC: number): void {
         let var1 = (t_fine >> 1) - 64000
         let var2 = ((((var1 >> 2) * (var1 >> 2)) >> 11) * PAR_P6) >> 2
@@ -1982,18 +1958,6 @@ namespace kitronik_air_quality {
 
     // Humidity compensation calculation: rawADC to % (integer)
     // 'tempScaled' is the current reading from the Temperature sensor
-    export function calcHumidity(humidADC: number, tempScaled: number): void {
-        let var1 = humidADC - (PAR_H1 << 4) - (((tempScaled * PAR_H3) / (100)) >> 1)
-        let var2 = (PAR_H2 * (((tempScaled * PAR_H4) / (100)) + (((tempScaled * ((tempScaled * PAR_H5) / (100))) >> 6) / (100)) + ((1 << 14)))) >> 10
-        let var3 = var1 * var2
-        let var4 = ((PAR_H6 << 7) + ((tempScaled * PAR_H7) / (100))) >> 4
-        let var5 = ((var3 >> 14) * (var3 >> 14)) >> 10
-        let var6 = (var4 * var5) >> 1
-        humidityReading = (var3 + var6) >> 12
-        humidityReading = (((var3 + var6) >> 10) * (1000)) >> 12
-        humidityReading = humidityReading / 1000                          // Convert to floating point with 3 dp
-    }
-
     export function intCalcHumidity(humidADC: number, tempScaled: number): void {
         prevHumidity = humidityReading
 
