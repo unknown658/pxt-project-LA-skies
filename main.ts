@@ -1733,57 +1733,57 @@ namespace kitronik_air_quality {
 
     // Useful BME688 Register Addresses
     // Control
-    export const CHIP_ADDRESS = 0x77    // I2C address as determined by hardware configuration
-    export const CTRL_MEAS = 0x74       // Bit position <7:5>: Temperature oversampling   Bit position <4:2>: Pressure oversampling   Bit position <1:0>: Sensor power mode
-    export const RESET = 0xE0           // Write 0xB6 to initiate soft-reset (same effect as power-on reset)
-    export const CHIP_ID = 0xD0         // Read this to return the chip ID: 0x61 - good way to check communication is occurring
-    export const CTRL_HUM = 0x72        // Bit position <2:0>: Humidity oversampling settings
-    export const CONFIG = 0x75          // Bit position <4:2>: IIR filter settings
-    export const CTRL_GAS_0 = 0x70      // Bit position <3>: Heater off (set to '1' to turn off current injection)
-    export const CTRL_GAS_1 = 0x71      // Bit position <5> DATASHEET ERROR: Enable gas conversions to start when set to '1'   Bit position <3:0>: Heater step selection (0 to 9)
+    const CHIP_ADDRESS = 0x77    // I2C address as determined by hardware configuration
+    const CTRL_MEAS = 0x74       // Bit position <7:5>: Temperature oversampling   Bit position <4:2>: Pressure oversampling   Bit position <1:0>: Sensor power mode
+    const RESET = 0xE0           // Write 0xB6 to initiate soft-reset (same effect as power-on reset)
+    const CHIP_ID = 0xD0         // Read this to return the chip ID: 0x61 - good way to check communication is occurring
+    const CTRL_HUM = 0x72        // Bit position <2:0>: Humidity oversampling settings
+    const CONFIG = 0x75          // Bit position <4:2>: IIR filter settings
+    const CTRL_GAS_0 = 0x70      // Bit position <3>: Heater off (set to '1' to turn off current injection)
+    const CTRL_GAS_1 = 0x71      // Bit position <5> DATASHEET ERROR: Enable gas conversions to start when set to '1'   Bit position <3:0>: Heater step selection (0 to 9)
 
     // Pressure Data
-    export const PRESS_MSB_0 = 0x1F     // Forced & Parallel: MSB [19:12]
-    export const PRESS_LSB_0 = 0x20     // Forced & Parallel: LSB [11:4]
-    export const PRESS_XLSB_0 = 0x21    // Forced & Parallel: XLSB [3:0]
+    const PRESS_MSB_0 = 0x1F     // Forced & Parallel: MSB [19:12]
+    const PRESS_LSB_0 = 0x20     // Forced & Parallel: LSB [11:4]
+    const PRESS_XLSB_0 = 0x21    // Forced & Parallel: XLSB [3:0]
 
     // Temperature Data
-    export const TEMP_MSB_0 = 0x22      // Forced & Parallel: MSB [19:12]
-    export const TEMP_LSB_0 = 0x23      // Forced & Parallel: LSB [11:4]
-    export const TEMP_XLSB_0 = 0x24     // Forced & Parallel: XLSB [3:0]
+    const TEMP_MSB_0 = 0x22      // Forced & Parallel: MSB [19:12]
+    const TEMP_LSB_0 = 0x23      // Forced & Parallel: LSB [11:4]
+    const TEMP_XLSB_0 = 0x24     // Forced & Parallel: XLSB [3:0]
 
     // Humidity Data
-    export const HUMID_MSB_0 = 0x25     // Forced & Parallel: MSB [15:8]
-    export const HUMID_LSB_0 = 0x26     // Forced & Parallel: LSB [7:0]
+    const HUMID_MSB_0 = 0x25     // Forced & Parallel: MSB [15:8]
+    const HUMID_LSB_0 = 0x26     // Forced & Parallel: LSB [7:0]
 
     // Gas Resistance Data
-    export const GAS_RES_MSB_0 = 0x2C   // Forced & Parallel: MSB [9:2]
-    export const GAS_RES_LSB_0 = 0x2D   // Forced & Parallel: Bit <7:6>: LSB [1:0]    Bit <5>: Gas valid    Bit <4>: Heater stability    Bit <3:0>: Gas resistance range
+    const GAS_RES_MSB_0 = 0x2C   // Forced & Parallel: MSB [9:2]
+    const GAS_RES_LSB_0 = 0x2D   // Forced & Parallel: Bit <7:6>: LSB [1:0]    Bit <5>: Gas valid    Bit <4>: Heater stability    Bit <3:0>: Gas resistance range
 
     // Status
-    export const MEAS_STATUS_0 = 0x1D   // Forced & Parallel: Bit <7>: New data    Bit <6>: Gas measuring    Bit <5>: Measuring    Bit <3:0>: Gas measurement index
+    const MEAS_STATUS_0 = 0x1D   // Forced & Parallel: Bit <7>: New data    Bit <6>: Gas measuring    Bit <5>: Measuring    Bit <3:0>: Gas measurement index
 
     //The following functions are for reading the registers on the BME688
     //function for reading register as unsigned 8 bit integer
-    export function getUInt8BE(reg: number): number {
+    function getUInt8BE(reg: number): number {
         pins.i2cWriteNumber(CHIP_ADDRESS, reg, NumberFormat.UInt8BE);
         return pins.i2cReadNumber(CHIP_ADDRESS, NumberFormat.UInt8BE);
     }
 
     //function for reading register as signed 8 bit integer (little endian)
-    export function getInt8LE(reg: number): number {
+    function getInt8LE(reg: number): number {
         pins.i2cWriteNumber(CHIP_ADDRESS, reg, NumberFormat.UInt8BE);
         return pins.i2cReadNumber(CHIP_ADDRESS, NumberFormat.Int8LE);
     }
 
     //function for reading register as signed 8 bit integer (big endian)
-    export function getInt8BE(reg: number): number {
+    function getInt8BE(reg: number): number {
         pins.i2cWriteNumber(CHIP_ADDRESS, reg, NumberFormat.UInt8BE);
         return pins.i2cReadNumber(CHIP_ADDRESS, NumberFormat.Int8BE);
     }
 
     // Function to convert unsigned ints to twos complement signed ints
-    export function twosComp(value: number, bits: number): number {
+    function twosComp(value: number, bits: number): number {
         if ((value & (1 << (bits - 1))) != 0) {
             value = value - (1 << bits)
         }
@@ -1791,74 +1791,76 @@ namespace kitronik_air_quality {
     }
 
     // Calibration parameters for compensation calculations
+    let tempLSB = 0
+    let tempMSB = 0
     // Temperature
-    let parT1_LSB = getUInt8BE(0xE9)
-    let parT1_MSB = getUInt8BE(0xEA)
-    export let PAR_T1 = twosComp((parT1_MSB << 8) | parT1_LSB, 16)      // Signed 16-bit
-    let parT2_LSB = getInt8BE(0x8A)
-    let parT2_MSB = getInt8BE(0x8B)
-    export let PAR_T2 = twosComp((parT2_MSB << 8) | parT2_LSB, 16)      // Signed 16-bit
-    export let PAR_T3 = getInt8BE(0x8C)                                 // Signed 8-bit
+    tempLSB = getUInt8BE(0xE9)
+    tempMSB = getUInt8BE(0xEA)
+    let PAR_T1 = twosComp((tempMSB << 8) | tempLSB, 16)      // Signed 16-bit
+    tempLSB = getInt8BE(0x8A)
+    tempMSB = getInt8BE(0x8B)
+    let PAR_T2 = twosComp((tempMSB << 8) | tempLSB, 16)      // Signed 16-bit
+    let PAR_T3 = getInt8BE(0x8C)                                 // Signed 8-bit
 
     // Pressure
-    let parP1_LSB = getUInt8BE(0x8E)
-    let parP1_MSB = getUInt8BE(0x8F)
-    export let PAR_P1 = (parP1_MSB << 8) | parP1_LSB                    // Always a positive number, do not do twosComp() conversion!
-    let parP2_LSB = getUInt8BE(0x90)
-    let parP2_MSB = getUInt8BE(0x91)
-    export let PAR_P2 = twosComp((parP2_MSB << 8) | parP2_LSB, 16)      // Signed 16-bit
-    export let PAR_P3 = getInt8BE(0x92)                                 // Signed 8-bit
-    let parP4_LSB = getUInt8BE(0x94)
-    let parP4_MSB = getUInt8BE(0x95)
-    export let PAR_P4 = twosComp((parP4_MSB << 8) | parP4_LSB, 16)      // Signed 16-bit
-    let parP5_LSB = getUInt8BE(0x96)
-    let parP5_MSB = getUInt8BE(0x97)
-    export let PAR_P5 = twosComp((parP5_MSB << 8) | parP5_LSB, 16)      // Signed 16-bit
-    export let PAR_P6 = getInt8BE(0x99)                                 // Signed 8-bit
-    export let PAR_P7 = getInt8BE(0x98)                                 // Signed 8-bit
-    let parP8_LSB = getUInt8BE(0x9C)
-    let parP8_MSB = getUInt8BE(0x9D)
-    export let PAR_P8 = twosComp((parP8_MSB << 8) | parP8_LSB, 16)      // Signed 16-bit
-    let parP9_LSB = getUInt8BE(0x9E)
-    let parP9_MSB = getUInt8BE(0x9F)
-    export let PAR_P9 = twosComp((parP9_MSB << 8) | parP9_LSB, 16)      // Signed 16-bit
-    export let PAR_P10 = getInt8BE(0xA0)                                // Signed 8-bit
+    tempLSB = getUInt8BE(0x8E)
+    tempMSB = getUInt8BE(0x8F)
+    let PAR_P1 = (tempMSB << 8) | tempLSB                    // Always a positive number, do not do twosComp() conversion!
+    tempLSB = getUInt8BE(0x90)
+    tempMSB = getUInt8BE(0x91)
+    let PAR_P2 = twosComp((tempMSB << 8) | tempLSB, 16)      // Signed 16-bit
+    let PAR_P3 = getInt8BE(0x92)                                 // Signed 8-bit
+    tempLSB = getUInt8BE(0x94)
+    tempMSB = getUInt8BE(0x95)
+    let PAR_P4 = twosComp((tempMSB << 8) | tempLSB, 16)      // Signed 16-bit
+    tempLSB = getUInt8BE(0x96)
+    tempMSB = getUInt8BE(0x97)
+    let PAR_P5 = twosComp((tempMSB << 8) | tempLSB, 16)      // Signed 16-bit
+    let PAR_P6 = getInt8BE(0x99)                                 // Signed 8-bit
+    let PAR_P7 = getInt8BE(0x98)                                 // Signed 8-bit
+    tempLSB = getUInt8BE(0x9C)
+    tempMSB = getUInt8BE(0x9D)
+    let PAR_P8 = twosComp((tempMSB << 8) | tempLSB, 16)      // Signed 16-bit
+    tempLSB = getUInt8BE(0x9E)
+    tempMSB = getUInt8BE(0x9F)
+    let PAR_P9 = twosComp((tempMSB << 8) | tempLSB, 16)      // Signed 16-bit
+    let PAR_P10 = getInt8BE(0xA0)                                // Signed 8-bit
 
     // Humidity
     let parH1_LSB_parH2_LSB = getUInt8BE(0xE2)
-    export let PAR_H1 = (getUInt8BE(0xE3) << 4) | (parH1_LSB_parH2_LSB & 0x0F)
-    export let PAR_H2 = (getUInt8BE(0xE1) << 4) | (parH1_LSB_parH2_LSB >> 4)
-    export let PAR_H3 = getInt8BE(0xE4)                                 // Signed 8-bit
-    export let PAR_H4 = getInt8BE(0xE5)                                 // Signed 8-bit
-    export let PAR_H5 = getInt8BE(0xE6)                                 // Signed 8-bit
-    export let PAR_H6 = getInt8BE(0xE7)                                 // Signed 8-bit
-    export let PAR_H7 = getInt8BE(0xE8)                                 // Signed 8-bit
+    let PAR_H1 = (getUInt8BE(0xE3) << 4) | (parH1_LSB_parH2_LSB & 0x0F)
+    let PAR_H2 = (getUInt8BE(0xE1) << 4) | (parH1_LSB_parH2_LSB >> 4)
+    let PAR_H3 = getInt8BE(0xE4)                                 // Signed 8-bit
+    let PAR_H4 = getInt8BE(0xE5)                                 // Signed 8-bit
+    let PAR_H5 = getInt8BE(0xE6)                                 // Signed 8-bit
+    let PAR_H6 = getInt8BE(0xE7)                                 // Signed 8-bit
+    let PAR_H7 = getInt8BE(0xE8)                                 // Signed 8-bit
 
     // Gas resistance
-    export let PAR_G1 = getInt8BE(0xED)                                 // Signed 8-bit
-    let parG2_MSB = getUInt8BE(0xEC)
-    let parG2_LSB = getUInt8BE(0xEB)
-    export let PAR_G2 = twosComp((parG2_MSB << 8) | parG2_LSB, 16)      // Signed 16-bit
-    export let PAR_G3 = getUInt8BE(0xEE)                                // Unsigned 8-bit
-    export let RES_HEAT_RANGE = (getUInt8BE(0x02) >> 4) & 0x03
-    export let RES_HEAT_VAL = twosComp(getUInt8BE(0x00), 8)              // Signed 8-bit
+    let PAR_G1 = getInt8BE(0xED)                                 // Signed 8-bit
+    tempLSB = getUInt8BE(0xEB)
+    tempMSB = getUInt8BE(0xEC)
+    let PAR_G2 = twosComp((tempMSB << 8) | tempLSB, 16)      // Signed 16-bit
+    let PAR_G3 = getUInt8BE(0xEE)                                // Unsigned 8-bit
+    let RES_HEAT_RANGE = (getUInt8BE(0x02) >> 4) & 0x03
+    let RES_HEAT_VAL = twosComp(getUInt8BE(0x00), 8)              // Signed 8-bit
 
     // Oversampling rate constants
-    export const OSRS_1X = 0x01
-    export const OSRS_2X = 0x02
-    export const OSRS_4X = 0x03
-    export const OSRS_8X = 0x04
-    export const OSRS_16X = 0x05
+    const OSRS_1X = 0x01
+    const OSRS_2X = 0x02
+    const OSRS_4X = 0x03
+    const OSRS_8X = 0x04
+    const OSRS_16X = 0x05
 
     // IIR filter coefficient values
-    export const IIR_0 = 0x00
-    export const IIR_1 = 0x01
-    export const IIR_3 = 0x02
-    export const IIR_7 = 0x03
-    export const IIR_15 = 0x04
-    export const IIR_31 = 0x05
-    export const IIR_63 = 0x06
-    export const IIR_127 = 0x07
+    const IIR_0 = 0x00
+    const IIR_1 = 0x01
+    const IIR_3 = 0x02
+    const IIR_7 = 0x03
+    const IIR_15 = 0x04
+    const IIR_31 = 0x05
+    const IIR_63 = 0x06
+    const IIR_127 = 0x07
 
     //Global variables used for storing one copy of value, these are used in multiple locations for calculations
     let bme688InitFlag = false
@@ -1875,20 +1877,20 @@ namespace kitronik_air_quality {
     export let airQualityRating = ""
     export let eCO2Value = 0
 
-    export let gasBaseline = 0
-    export let humidityBaseline = 40        // Between 30% & 50% is a widely recognised optimal indoor humidity, 40% is a good middle ground
-    export let humidityWeighting = 0.25     // Humidity contributes 25% to the IAQ score, gas resistance is 75%
-    export let prevTemperature = 0
-    export let prevHumidity = 0
-    export let measureTime = 0
-    export let prevMeasureTime = 0
+    let gasBaseline = 0
+    let humidityBaseline = 40        // Between 30% & 50% is a widely recognised optimal indoor humidity, 40% is a good middle ground
+    let humidityWeighting = 0.25     // Humidity contributes 25% to the IAQ score, gas resistance is 75%
+    let prevTemperature = 0
+    let prevHumidity = 0
+    let measureTime = 0
+    let prevMeasureTime = 0
 
 
-    export let adcRawTemperature = 0    // adc reading of raw temperature
-    export let adcRawPressure = 0       // adc reading of raw pressure
-    export let adcRawHumidity = 0       // adc reading of raw humidity
-    export let adcRawGasResistance = 0  // adc reading of raw gas resistance
-    export let gasRange = 0
+    let adcRawTemperature = 0    // adc reading of raw temperature
+    let adcRawPressure = 0       // adc reading of raw pressure
+    let adcRawHumidity = 0       // adc reading of raw humidity
+    let adcRawGasResistance = 0  // adc reading of raw gas resistance
+    let gasRange = 0
 
     // Compensation calculation intermediate variables (used across temperature, pressure, humidity and gas)
     let var1 = 0
