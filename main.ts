@@ -1722,12 +1722,12 @@ namespace kitronik_air_quality {
     let gasRange = 0
 
     // Compensation calculation intermediate variables (used across temperature, pressure, humidity and gas)
-    let var1 = 0
+    /*let var1 = 0
     let var2 = 0
     let var3 = 0
     let var4 = 0
     let var5 = 0
-    let var6 = 0
+    let var6 = 0*/
 
     let t_fine = 0                          // Intermediate temperature value used for pressure calculation
     export let ambientTemperature = 0       // Intermediate temperature value used for heater calculation
@@ -1825,12 +1825,15 @@ namespace kitronik_air_quality {
     // 'targetTemp' is the desired temperature of the hot plate in degC (in range 200 to 400)
     // Note: Heating duration also needs to be specified for each heating step in 'gas_wait' registers
     export function intConvertGasTargetTemp(ambientTemp: number, targetTemp: number): number {
-        var1 = Math.idiv((ambientTemp * PAR_G3), 1000) << 8    // Divide by 1000 as we have ambientTemp in pre-degC format (i.e. 2500 rather than 25.00 degC)
+        /*var1 = Math.idiv((ambientTemp * PAR_G3), 1000) << 8    // Divide by 1000 as we have ambientTemp in pre-degC format (i.e. 2500 rather than 25.00 degC)
         var2 = (PAR_G1 + 784) * Math.idiv((Math.idiv(((PAR_G2 + 154009) * targetTemp * 5), 100) + 3276800), 10)
         var3 = var1 + (var2 >> 1)
         var4 = Math.idiv(var3, (RES_HEAT_RANGE + 4))
         var5 = (131 * RES_HEAT_VAL) + 65536                 // Target heater resistance in Ohms
-        let resHeatX100 = ((Math.idiv(var4, var5) - 250) * 34)
+        let resHeatX100 = ((Math.idiv(var4, var5) - 250) * 34)*/
+
+        let resHeatOhm = ((131 * RES_HEAT_VAL) + 65536)                 // Target heater resistance in Ohms
+        let resHeatX100 = ((Math.idiv((Math.idiv(((Math.idiv((ambientTemp * PAR_G3), 1000) << 8) + (((PAR_G1 + 784) * Math.idiv((Math.idiv(((PAR_G2 + 154009) * targetTemp * 5), 100) + 3276800), 10)) >> 1)), (RES_HEAT_RANGE + 4))), ((131 * RES_HEAT_VAL) + 65536)) - 250) * 34)
         let resHeat = Math.idiv((resHeatX100 + 50), 100)
 
         return resHeat
@@ -1838,11 +1841,12 @@ namespace kitronik_air_quality {
 
     // Gas resistance compensation calculation: rawADC & range to Ohms (integer)
     export function intCalcGasResistance(gasADC: number, gasRange: number): void {
-        var1 = 262144 >> gasRange
+        /*var1 = 262144 >> gasRange
         var2 = gasADC - 512
         var2 = var2 * 3
         var2 = 4096 + var2
-        let calcGasRes = Math.idiv((10000 * var1), var2)
+        let calcGasRes = Math.idiv((10000 * var1), var2)*/
+        let calcGasRes = Math.idiv((10000 * (262144 >> gasRange)), (4096 + ((gasADC - 512) * 3)))
         gasResistance = calcGasRes * 100
     }
 
