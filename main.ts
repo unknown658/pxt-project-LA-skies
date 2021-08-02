@@ -1909,9 +1909,9 @@ namespace kitronik_air_quality {
     export function calcTemperature(tempADC: number): void {
         prevTemperature = temperatureReading
 
-        let var1 = (tempADC >> 3) - (PAR_T1 << 1)
-        let var2 = (var1 * PAR_T2) >> 11
-        let var3 = ((((var1 >> 1) * (var1 >> 1)) >> 12) * (PAR_T3 << 4)) >> 14
+        var1 = (tempADC >> 3) - (PAR_T1 << 1)
+        var2 = (var1 * PAR_T2) >> 11
+        var3 = ((((var1 >> 1) * (var1 >> 1)) >> 12) * (PAR_T3 << 4)) >> 14
         t_fine = var2 + var3
         let newAmbTemp = ((t_fine * 5) + 128) >> 8
         temperatureReading = newAmbTemp / 100     // Convert to floating point with 2 dp
@@ -1935,8 +1935,8 @@ namespace kitronik_air_quality {
 
     // Pressure compensation calculation: rawADC to Pascals (integer)
     export function intCalcPressure(pressureADC: number): void {
-        let var1 = (t_fine >> 1) - 64000
-        let var2 = ((((var1 >> 2) * (var1 >> 2)) >> 11) * PAR_P6) >> 2
+        var1 = (t_fine >> 1) - 64000
+        var2 = ((((var1 >> 2) * (var1 >> 2)) >> 11) * PAR_P6) >> 2
         var2 = var2 + ((var1 * PAR_P5) << 1)
         var2 = (var2 >> 2) + (PAR_P4 << 16)
         var1 = (((((var1 >> 2) * (var1 >> 2)) >> 13) * (PAR_P3 << 5)) >> 3) + ((PAR_P2 * var1) >> 1)
@@ -1963,12 +1963,12 @@ namespace kitronik_air_quality {
     export function intCalcHumidity(humidADC: number, tempScaled: number): void {
         prevHumidity = humidityReading
 
-        let var1 = humidADC - (PAR_H1 << 4) - (Math.idiv((tempScaled * PAR_H3), 100) >> 1)
-        let var2 = (PAR_H2 * (Math.idiv((tempScaled * PAR_H4), 100) + Math.idiv(((tempScaled * (Math.idiv((tempScaled * PAR_H5), 100))) >> 6), 100) + ((1 << 14)))) >> 10
-        let var3 = var1 * var2
-        let var4 = ((PAR_H6 << 7) + (Math.idiv((tempScaled * PAR_H7), 100))) >> 4
-        let var5 = ((var3 >> 14) * (var3 >> 14)) >> 10
-        let var6 = (var4 * var5) >> 1
+        var1 = humidADC - (PAR_H1 << 4) - (Math.idiv((tempScaled * PAR_H3), 100) >> 1)
+        var2 = (PAR_H2 * (Math.idiv((tempScaled * PAR_H4), 100) + Math.idiv(((tempScaled * (Math.idiv((tempScaled * PAR_H5), 100))) >> 6), 100) + ((1 << 14)))) >> 10
+        var3 = var1 * var2
+        var4 = ((PAR_H6 << 7) + (Math.idiv((tempScaled * PAR_H7), 100))) >> 4
+        var5 = ((var3 >> 14) * (var3 >> 14)) >> 10
+        var6 = (var4 * var5) >> 1
         humidityReading = (var3 + var6) >> 12
         humidityReading = (((var3 + var6) >> 10) * (1000)) >> 12
         humidityReading = Math.idiv(humidityReading, 1000)
@@ -2143,27 +2143,32 @@ namespace kitronik_air_quality {
         writeBuf[0] = GAS_RES_LSB_0
         let heaterStable = (getUInt8BE(writeBuf[0]) & 0x10) >> 4
 
+        // Temporary variables for raw to compensated value calculations
+        let adcMSB = 0
+        let adcLSB = 0
+        let adcXLSB = 0
+
         // If there is new data, read temperature ADC registers(this is required for all other calculations)
-        let adcTempMSB = getUInt8BE(TEMP_MSB_0)
-        let adcTempLSB = getUInt8BE(TEMP_LSB_0)
-        let adcTempXLSB = getUInt8BE(TEMP_XLSB_0)
-        adcRawTemperature = (adcTempMSB << 12) | (adcTempLSB << 4) | (adcTempXLSB >> 4)
+        adcMSB = getUInt8BE(TEMP_MSB_0)
+        adcLSB = getUInt8BE(TEMP_LSB_0)
+        adcXLSB = getUInt8BE(TEMP_XLSB_0)
+        adcRawTemperature = (adcMSB << 12) | (adcLSB << 4) | (adcXLSB >> 4)
 
         // Read pressure ADC registers
-        let adcPressMSB = getUInt8BE(PRESS_MSB_0)
-        let adcPressLSB = getUInt8BE(PRESS_LSB_0)
-        let adcPressXLSB = getUInt8BE(PRESS_XLSB_0)
-        adcRawPressure = (adcPressMSB << 12) | (adcPressLSB << 4) | (adcPressXLSB >> 4)
+        adcMSB = getUInt8BE(PRESS_MSB_0)
+        adcLSB = getUInt8BE(PRESS_LSB_0)
+        adcXLSB = getUInt8BE(PRESS_XLSB_0)
+        adcRawPressure = (adcMSB << 12) | (adcLSB << 4) | (adcXLSB >> 4)
 
         // Read humidity ADC registers
-        let adcHumidMSB = getUInt8BE(HUMID_MSB_0)
-        let adcHumidLSB = getUInt8BE(HUMID_LSB_0)
-        adcRawHumidity = (adcHumidMSB << 8) | adcHumidLSB
+        adcMSB = getUInt8BE(HUMID_MSB_0)
+        adcLSB = getUInt8BE(HUMID_LSB_0)
+        adcRawHumidity = (adcMSB << 8) | adcLSB
 
         // Read gas resistance ADC registers
-        let adcGasResMSB = getUInt8BE(GAS_RES_MSB_0)
-        let adcGasResLSB = getUInt8BE(GAS_RES_LSB_0) >> 6           // Shift bits <7:6> right to get LSB for gas resistance
-        adcRawGasResistance = (adcGasResMSB << 2) | adcGasResLSB
+        adcMSB = getUInt8BE(GAS_RES_MSB_0)
+        adcLSB = getUInt8BE(GAS_RES_LSB_0) >> 6           // Shift bits <7:6> right to get LSB for gas resistance
+        adcRawGasResistance = (adcMSB << 2) | adcLSB
 
         gasRange = getUInt8BE(GAS_RES_LSB_0) & 0x0F
 
@@ -2889,23 +2894,6 @@ namespace kitronik_air_quality {
     }
 
     /**
-     * Choice whether or not to send the data entry position number in the log.
-     * @param sendSelection is the choice of "Send" or "Don't Send" from the enum
-     */
-    //% subcategory="Data Logging"
-    //% group=Setup
-    //% weight=85 blockGap=8
-    //% blockId=kitronik_air_quality_entry_numbers
-    //% block="%sendSelection|entry positions with data"
-    //% blockHidden=true
-    export function optionSendEntryNumber(sendSelection: ListNumber): void {
-        if (sendSelection == ListNumber.Send)
-            entryNumber = true
-        else if (sendSelection == ListNumber.DontSend)
-            entryNumber = false
-    }
-
-    /**
      * Include the date in the data logging output.
      */
     //% subcategory="Data Logging"
@@ -3151,17 +3139,8 @@ namespace kitronik_air_quality {
     export function eraseData(): void {
         let progress = 0
         show("Erasing Memory...", 2, ShowAlign.Centre)
-        //drawRect(102, 7, 12, 35)
         for (let addr = (firstDataBlock * 128); addr < 131072; addr++) {
             progress = Math.round((addr / 131072) * 100)
-            /*if ((progress % 10) == 0) {
-                drawLine(LineDirectionSelection.horizontal, progress, 13, 36)
-                drawLine(LineDirectionSelection.horizontal, progress, 13, 37)
-                drawLine(LineDirectionSelection.horizontal, progress, 13, 38)
-                drawLine(LineDirectionSelection.horizontal, progress, 13, 39)
-                drawLine(LineDirectionSelection.horizontal, progress, 13, 40)
-            }*/
-
             writeByte(0xFF, addr)
         }
         clear()
