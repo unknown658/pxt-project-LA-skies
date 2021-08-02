@@ -1742,7 +1742,6 @@ namespace kitronik_air_quality {
         var2 = (var1 * PAR_T2) >> 11
         var3 = ((((var1 >> 1) * (var1 >> 1)) >> 12) * (PAR_T3 << 4)) >> 14
         t_fine = var2 + var3
-        //t_fine = ((((tempADC >> 3) - (PAR_T1 << 1)) * PAR_T2) >> 11) + (((((((tempADC >> 3) - (PAR_T1 << 1)) >> 1) * (((tempADC >> 3) - (PAR_T1 << 1)) >> 1)) >> 12) * (PAR_T3 << 4)) >> 14)
         let newAmbTemp = ((t_fine * 5) + 128) >> 8
         temperatureReading = newAmbTemp / 100     // Convert to floating point with 2 dp
 
@@ -1786,19 +1785,6 @@ namespace kitronik_air_quality {
         var2 = ((pressureReading >> 2) * PAR_P8) >> 13
         var3 = ((pressureReading >> 8) * (pressureReading >> 8) * (pressureReading >> 8) * PAR_P10) >> 17
         pressureReading = pressureReading + ((var1 + var2 + var3 + (PAR_P7 << 7)) >> 4)
-        
-        /*pressureReading = 1048576 - pressureADC
-        pressureReading = ((pressureReading - (((((((((((t_fine >> 1) - 64000) >> 2) * (((t_fine >> 1) - 64000) >> 2)) >> 11) * PAR_P6) >> 2) + ((((t_fine >> 1) - 64000) * PAR_P5) << 1)) >> 2) + (PAR_P4 << 16)) >> 12)) * 3125)
-
-        if (pressureReading >= (1 << 30)) {
-            pressureReading = Math.idiv(pressureReading, (((32768 + (((((((((t_fine >> 1) - 64000) >> 2) * (((t_fine >> 1) - 64000) >> 2)) >> 13) * (PAR_P3 << 5)) >> 3) + ((PAR_P2 * ((t_fine >> 1) - 64000)) >> 1)) >> 18)) * PAR_P1) >> 15)) << 1
-        }
-        else {
-            pressureReading = Math.idiv((pressureReading << 1), (((32768 + (((((((((t_fine >> 1) - 64000) >> 2) * (((t_fine >> 1) - 64000) >> 2)) >> 13) * (PAR_P3 << 5)) >> 3) + ((PAR_P2 * ((t_fine >> 1) - 64000)) >> 1)) >> 18)) * PAR_P1) >> 15))
-        }
-
-        pressureReading = pressureReading + ((((PAR_P9 * (((pressureReading >> 3) * (pressureReading >> 3)) >> 13)) >> 12) + (((pressureReading >> 2) * PAR_P8) >> 13) + (((pressureReading >> 8) * (pressureReading >> 8) * (pressureReading >> 8) * PAR_P10) >> 17) + (PAR_P7 << 7)) >> 4)
-        */
     }
 
     // Humidity compensation calculation: rawADC to % (integer)
@@ -1814,10 +1800,6 @@ namespace kitronik_air_quality {
         var6 = (var4 * var5) >> 1
         humidityReading = (var3 + var6) >> 12
         humidityReading = (((var3 + var6) >> 10) * (1000)) >> 12
-        /*
-        humidityReading = (((humidADC - (PAR_H1 << 4) - (Math.idiv((tempScaled * PAR_H3), 100) >> 1)) * ((PAR_H2 * (Math.idiv((tempScaled * PAR_H4), 100) + Math.idiv(((tempScaled * (Math.idiv((tempScaled * PAR_H5), 100))) >> 6), 100) + ((1 << 14)))) >> 10)) + (((((PAR_H6 << 7) + (Math.idiv((tempScaled * PAR_H7), 100))) >> 4) * (((((humidADC - (PAR_H1 << 4) - (Math.idiv((tempScaled * PAR_H3), 100) >> 1)) * ((PAR_H2 * (Math.idiv((tempScaled * PAR_H4), 100) + Math.idiv(((tempScaled * (Math.idiv((tempScaled * PAR_H5), 100))) >> 6), 100) + ((1 << 14)))) >> 10)) >> 14) * (((humidADC - (PAR_H1 << 4) - (Math.idiv((tempScaled * PAR_H3), 100) >> 1)) * ((PAR_H2 * (Math.idiv((tempScaled * PAR_H4), 100) + Math.idiv(((tempScaled * (Math.idiv((tempScaled * PAR_H5), 100))) >> 6), 100) + ((1 << 14)))) >> 10)) >> 14)) >> 10)) >> 1)) >> 12
-        humidityReading = (((((humidADC - (PAR_H1 << 4) - (Math.idiv((tempScaled * PAR_H3), 100) >> 1)) * ((PAR_H2 * (Math.idiv((tempScaled * PAR_H4), 100) + Math.idiv(((tempScaled * (Math.idiv((tempScaled * PAR_H5), 100))) >> 6), 100) + ((1 << 14)))) >> 10)) + (((((PAR_H6 << 7) + (Math.idiv((tempScaled * PAR_H7), 100))) >> 4) * (((((humidADC - (PAR_H1 << 4) - (Math.idiv((tempScaled * PAR_H3), 100) >> 1)) * ((PAR_H2 * (Math.idiv((tempScaled * PAR_H4), 100) + Math.idiv(((tempScaled * (Math.idiv((tempScaled * PAR_H5), 100))) >> 6), 100) + ((1 << 14)))) >> 10)) >> 14) * (((humidADC - (PAR_H1 << 4) - (Math.idiv((tempScaled * PAR_H3), 100) >> 1)) * ((PAR_H2 * (Math.idiv((tempScaled * PAR_H4), 100) + Math.idiv(((tempScaled * (Math.idiv((tempScaled * PAR_H5), 100))) >> 6), 100) + ((1 << 14)))) >> 10)) >> 14)) >> 10)) >> 1)) >> 10) * (1000)) >> 12
-        */
         humidityReading = Math.idiv(humidityReading, 1000)
     }
 
@@ -1832,10 +1814,6 @@ namespace kitronik_air_quality {
         var4 = Math.idiv(var3, (RES_HEAT_RANGE + 4))
         var5 = (131 * RES_HEAT_VAL) + 65536                 // Target heater resistance in Ohms
         let resHeatX100 = ((Math.idiv(var4, var5) - 250) * 34)
-        /*
-        let resHeatOhm = ((131 * RES_HEAT_VAL) + 65536)                 // Target heater resistance in Ohms
-        let resHeatX100 = ((Math.idiv((Math.idiv(((Math.idiv((ambientTemp * PAR_G3), 1000) << 8) + (((PAR_G1 + 784) * Math.idiv((Math.idiv(((PAR_G2 + 154009) * targetTemp * 5), 100) + 3276800), 10)) >> 1)), (RES_HEAT_RANGE + 4))), ((131 * RES_HEAT_VAL) + 65536)) - 250) * 34)
-        */
         let resHeat = Math.idiv((resHeatX100 + 50), 100)
 
         return resHeat
@@ -1849,8 +1827,6 @@ namespace kitronik_air_quality {
         var2 = 4096 + var2
         let calcGasRes = Math.idiv((10000 * var1), var2)
 
-        //let calcGasRes = Math.idiv((10000 * (262144 >> gasRange)), (4096 + ((gasADC - 512) * 3)))
-        
         gasResistance = calcGasRes * 100
     }
 
