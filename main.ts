@@ -2291,10 +2291,7 @@ namespace kitronik_air_quality {
     }
 
     function mapValue(val: number, frLow: number, frHigh: number, toLow: number, toHigh: number): number {
-        let relativeVal = val - frLow
-        let frRange = frHigh - frLow
-        let toRange = toHigh - toLow
-        let mappedVal = toLow + ((relativeVal / frRange) * toRange)
+        let mappedVal = toLow + (((val - frLow) / (frHigh - frLow)) * (toHigh - toLow))
         return mappedVal
     }
 
@@ -2347,7 +2344,7 @@ namespace kitronik_air_quality {
 
         eCO2Value = Math.trunc(eCO2Value)
 
-        let humidityFactor = 0
+        /*let humidityFactor = 0
         let temperatureFactor = 0
         let combinedFactor = 0
         // Adjust eCO2Value for humidity greater than the baseline (40%)
@@ -2362,7 +2359,7 @@ namespace kitronik_air_quality {
         }
         else if (temperatureOffset > 0) {
             eCO2Value = Math.trunc(eCO2Value * (((temperatureReading - ambientTemperature) / ambientTemperature) + 1))
-        }
+        }*/
 
         // If measurements are taking place rapidly, breath detection is possible due to the sudden increase in humidity (~7-10%)
         // If this increase happens within a 2000ms time window, 1200ppm is added to the eCO2 value
