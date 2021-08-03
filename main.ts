@@ -1622,7 +1622,7 @@ namespace kitronik_air_quality {
     // Calibration parameters for compensation calculations
     let tempLSB = 0
     let tempMSB = 0
-    /*// Temperature
+    // Temperature
     tempLSB = getUInt8BE(0xE9)
     tempMSB = getUInt8BE(0xEA)
     let PAR_T1 = twosComp((tempMSB << 8) | tempLSB, 16)      // Signed 16-bit
@@ -1673,7 +1673,7 @@ namespace kitronik_air_quality {
     let PAR_G3 = getUInt8BE(0xEE)                                // Unsigned 8-bit
     let RES_HEAT_RANGE = (getUInt8BE(0x02) >> 4) & 0x03
     let RES_HEAT_VAL = twosComp(getUInt8BE(0x00), 8)              // Signed 8-bit
-    */
+    
     // Oversampling rate constants
     const OSRS_1X = 0x01
     const OSRS_2X = 0x02
@@ -1737,13 +1737,9 @@ namespace kitronik_air_quality {
     export function calcTemperature(tempADC: number): void {
         prevTemperature = temperatureReading
 
-        tempLSB = getUInt8BE(0xE9)
-        tempMSB = getUInt8BE(0xEA)
-        var1 = (tempADC >> 3) - (twosComp((tempMSB << 8) | tempLSB, 16) << 1)
-        tempLSB = getInt8BE(0x8A)
-        tempMSB = getInt8BE(0x8B)
-        var2 = (var1 * twosComp((tempMSB << 8) | tempLSB, 16)) >> 11
-        var3 = ((((var1 >> 1) * (var1 >> 1)) >> 12) * (getInt8BE(0x8C) << 4)) >> 14
+        var1 = (tempADC >> 3) - (PAR_T1 << 1)
+        var2 = (var1 * PAR_T2) >> 11
+        var3 = ((((var1 >> 1) * (var1 >> 1)) >> 12) * (PAR_T3 << 4)) >> 14
         t_fine = var2 + var3
         let newAmbTemp = ((t_fine * 5) + 128) >> 8
         temperatureReading = newAmbTemp / 100     // Convert to floating point with 2 dp
@@ -1768,20 +1764,12 @@ namespace kitronik_air_quality {
     // Pressure compensation calculation: rawADC to Pascals (integer)
     export function intCalcPressure(pressureADC: number): void {
         var1 = (t_fine >> 1) - 64000
-        var2 = ((((var1 >> 2) * (var1 >> 2)) >> 11) * getInt8BE(0x99)) >> 2
-        tempLSB = getUInt8BE(0x96)
-        tempMSB = getUInt8BE(0x97)
-        var2 = var2 + ((var1 * twosComp((tempMSB << 8) | tempLSB, 16)) << 1)
-        tempLSB = getUInt8BE(0x94)
-        tempMSB = getUInt8BE(0x95)
-        var2 = (var2 >> 2) + (twosComp((tempMSB << 8) | tempLSB, 16) << 16)
-        tempLSB = getUInt8BE(0x90)
-        tempMSB = getUInt8BE(0x91)
-        var1 = (((((var1 >> 2) * (var1 >> 2)) >> 13) * (getInt8BE(0x92) << 5)) >> 3) + ((twosComp((tempMSB << 8) | tempLSB, 16) * var1) >> 1)
+        var2 = ((((var1 >> 2) * (var1 >> 2)) >> 11) * PAR_P6) >> 2
+        var2 = var2 + ((var1 * PAR_P5) << 1)
+        var2 = (var2 >> 2) + (PAR_P4 << 16)
+        var1 = (((((var1 >> 2) * (var1 >> 2)) >> 13) * (PAR_P3 << 5)) >> 3) + ((PAR_P2 * var1) >> 1)
         var1 = var1 >> 18
-        tempLSB = getUInt8BE(0x8E)
-        tempMSB = getUInt8BE(0x8F)
-        var1 = ((32768 + var1) * ((tempMSB << 8) | tempLSB)) >> 15
+        var1 = ((32768 + var1) * PAR_P1) >> 15
         pressureReading = 1048576 - pressureADC
         pressureReading = ((pressureReading - (var2 >> 12)) * 3125)
 
@@ -1792,25 +1780,21 @@ namespace kitronik_air_quality {
             pressureReading = Math.idiv((pressureReading << 1), var1)
         }
 
-        tempLSB = getUInt8BE(0x9E)
-        tempMSB = getUInt8BE(0x9F)
-        var1 = (twosComp((tempMSB << 8) | tempLSB, 16) * (((pressureReading >> 3) * (pressureReading >> 3)) >> 13)) >> 12
-        tempLSB = getUInt8BE(0x9C)
-        tempMSB = getUInt8BE(0x9D)
-        var2 = ((pressureReading >> 2) * twosComp((tempMSB << 8) | tempLSB, 16)) >> 13
-        var3 = ((pressureReading >> 8) * (pressureReading >> 8) * (pressureReading >> 8) * getInt8BE(0xA0)) >> 17
-        pressureReading = pressureReading + ((var1 + var2 + var3 + (getInt8BE(0x98) << 7)) >> 4)
+        var1 = (PAR_P9 * (((pressureReading >> 3) * (pressureReading >> 3)) >> 13)) >> 12
+        var2 = ((pressureReading >> 2) * PAR_P8) >> 13
+        var3 = ((pressureReading >> 8) * (pressureReading >> 8) * (pressureReading >> 8) * PAR_P10) >> 17
+        pressureReading = pressureReading + ((var1 + var2 + var3 + (PAR_P7 << 7)) >> 4)
     }
 
     // Humidity compensation calculation: rawADC to % (integer)
     // 'tempScaled' is the current reading from the Temperature sensor
     export function intCalcHumidity(humidADC: number, tempScaled: number): void {
         prevHumidity = humidityReading
-        let parH1_LSB_parH2_LSB = getUInt8BE(0xE2)
-        var1 = humidADC - (((getUInt8BE(0xE3) << 4) | (parH1_LSB_parH2_LSB & 0x0F)) << 4) - (Math.idiv((tempScaled * getInt8BE(0xE4)), 100) >> 1)
-        var2 = (((getUInt8BE(0xE1) << 4) | (parH1_LSB_parH2_LSB >> 4)) * (Math.idiv((tempScaled * getInt8BE(0xE5)), 100) + Math.idiv(((tempScaled * (Math.idiv((tempScaled * getInt8BE(0xE6)), 100))) >> 6), 100) + ((1 << 14)))) >> 10
+
+        var1 = humidADC - (PAR_H1 << 4) - (Math.idiv((tempScaled * PAR_H3), 100) >> 1)
+        var2 = (PAR_H2 * (Math.idiv((tempScaled * PAR_H4), 100) + Math.idiv(((tempScaled * (Math.idiv((tempScaled * PAR_H5), 100))) >> 6), 100) + ((1 << 14)))) >> 10
         var3 = var1 * var2
-        var4 = ((getInt8BE(0xE7) << 7) + (Math.idiv((tempScaled * getInt8BE(0xE8)), 100))) >> 4
+        var4 = ((PAR_H6 << 7) + (Math.idiv((tempScaled * PAR_H7), 100))) >> 4
         var5 = ((var3 >> 14) * (var3 >> 14)) >> 10
         var6 = (var4 * var5) >> 1
         humidityReading = (var3 + var6) >> 12
@@ -1823,13 +1807,11 @@ namespace kitronik_air_quality {
     // 'targetTemp' is the desired temperature of the hot plate in degC (in range 200 to 400)
     // Note: Heating duration also needs to be specified for each heating step in 'gas_wait' registers
     export function intConvertGasTargetTemp(ambientTemp: number, targetTemp: number): number {
-        var1 = Math.idiv((ambientTemp * getUInt8BE(0xEE)), 1000) << 8    // Divide by 1000 as we have ambientTemp in pre-degC format (i.e. 2500 rather than 25.00 degC)
-        tempLSB = getUInt8BE(0xEB)
-        tempMSB = getUInt8BE(0xEC)
-        var2 = (getInt8BE(0xED) + 784) * Math.idiv((Math.idiv(((twosComp((tempMSB << 8) | tempLSB, 16) + 154009) * targetTemp * 5), 100) + 3276800), 10)
+        var1 = Math.idiv((ambientTemp * PAR_G3), 1000) << 8    // Divide by 1000 as we have ambientTemp in pre-degC format (i.e. 2500 rather than 25.00 degC)
+        var2 = (PAR_G1 + 784) * Math.idiv((Math.idiv(((PAR_G2 + 154009) * targetTemp * 5), 100) + 3276800), 10)
         var3 = var1 + (var2 >> 1)
-        var4 = Math.idiv(var3, (((getUInt8BE(0x02) >> 4) & 0x03) + 4))
-        var5 = (131 * twosComp(getUInt8BE(0x00), 8)) + 65536                 // Target heater resistance in Ohms
+        var4 = Math.idiv(var3, (RES_HEAT_RANGE + 4))
+        var5 = (131 * RES_HEAT_VAL) + 65536                 // Target heater resistance in Ohms
         let resHeatX100 = ((Math.idiv(var4, var5) - 250) * 34)
         let resHeat = Math.idiv((resHeatX100 + 50), 100)
 
