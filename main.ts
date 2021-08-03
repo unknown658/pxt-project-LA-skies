@@ -1619,6 +1619,61 @@ namespace kitronik_air_quality {
         return value
     }
 
+    // Calibration parameters for compensation calculations
+    let tempLSB = 0
+    let tempMSB = 0
+    /*// Temperature
+    tempLSB = getUInt8BE(0xE9)
+    tempMSB = getUInt8BE(0xEA)
+    let PAR_T1 = twosComp((tempMSB << 8) | tempLSB, 16)      // Signed 16-bit
+    tempLSB = getInt8BE(0x8A)
+    tempMSB = getInt8BE(0x8B)
+    let PAR_T2 = twosComp((tempMSB << 8) | tempLSB, 16)      // Signed 16-bit
+    let PAR_T3 = getInt8BE(0x8C)                                 // Signed 8-bit
+
+    // Pressure
+    tempLSB = getUInt8BE(0x8E)
+    tempMSB = getUInt8BE(0x8F)
+    let PAR_P1 = (tempMSB << 8) | tempLSB                    // Always a positive number, do not do twosComp() conversion!
+    tempLSB = getUInt8BE(0x90)
+    tempMSB = getUInt8BE(0x91)
+    let PAR_P2 = twosComp((tempMSB << 8) | tempLSB, 16)      // Signed 16-bit
+    let PAR_P3 = getInt8BE(0x92)                                 // Signed 8-bit
+    tempLSB = getUInt8BE(0x94)
+    tempMSB = getUInt8BE(0x95)
+    let PAR_P4 = twosComp((tempMSB << 8) | tempLSB, 16)      // Signed 16-bit
+    tempLSB = getUInt8BE(0x96)
+    tempMSB = getUInt8BE(0x97)
+    let PAR_P5 = twosComp((tempMSB << 8) | tempLSB, 16)      // Signed 16-bit
+    let PAR_P6 = getInt8BE(0x99)                                 // Signed 8-bit
+    let PAR_P7 = getInt8BE(0x98)                                 // Signed 8-bit
+    tempLSB = getUInt8BE(0x9C)
+    tempMSB = getUInt8BE(0x9D)
+    let PAR_P8 = twosComp((tempMSB << 8) | tempLSB, 16)      // Signed 16-bit
+    tempLSB = getUInt8BE(0x9E)
+    tempMSB = getUInt8BE(0x9F)
+    let PAR_P9 = twosComp((tempMSB << 8) | tempLSB, 16)      // Signed 16-bit
+    let PAR_P10 = getInt8BE(0xA0)                                // Signed 8-bit
+
+    // Humidity
+    let parH1_LSB_parH2_LSB = getUInt8BE(0xE2)
+    let PAR_H1 = (getUInt8BE(0xE3) << 4) | (parH1_LSB_parH2_LSB & 0x0F)
+    let PAR_H2 = (getUInt8BE(0xE1) << 4) | (parH1_LSB_parH2_LSB >> 4)
+    let PAR_H3 = getInt8BE(0xE4)                                 // Signed 8-bit
+    let PAR_H4 = getInt8BE(0xE5)                                 // Signed 8-bit
+    let PAR_H5 = getInt8BE(0xE6)                                 // Signed 8-bit
+    let PAR_H6 = getInt8BE(0xE7)                                 // Signed 8-bit
+    let PAR_H7 = getInt8BE(0xE8)                                 // Signed 8-bit
+
+    // Gas resistance
+    let PAR_G1 = getInt8BE(0xED)                                 // Signed 8-bit
+    tempLSB = getUInt8BE(0xEB)
+    tempMSB = getUInt8BE(0xEC)
+    let PAR_G2 = twosComp((tempMSB << 8) | tempLSB, 16)      // Signed 16-bit
+    let PAR_G3 = getUInt8BE(0xEE)                                // Unsigned 8-bit
+    let RES_HEAT_RANGE = (getUInt8BE(0x02) >> 4) & 0x03
+    let RES_HEAT_VAL = twosComp(getUInt8BE(0x00), 8)              // Signed 8-bit
+    */
     // Oversampling rate constants
     const OSRS_1X = 0x01
     const OSRS_2X = 0x02
@@ -1666,8 +1721,6 @@ namespace kitronik_air_quality {
     let gasRange = 0
 
     // Compensation calculation intermediate variables (used across temperature, pressure, humidity and gas)
-    let tempLSB = 0
-    let tempMSB = 0
     let var1 = 0
     let var2 = 0
     let var3 = 0
@@ -2449,8 +2502,8 @@ namespace kitronik_air_quality {
     //% addr.min=3072 addr.max=131071
     //% blockHidden = true
     export function writeByte(data: any, addr: number): void {
-        if (addr < 3072) {
-            addr = 3072
+        if (addr < 0) {
+            addr = 0
         }
         if (addr > 131071) {
             addr = 131071
