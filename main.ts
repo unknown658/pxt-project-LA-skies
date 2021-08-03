@@ -2306,7 +2306,31 @@ namespace kitronik_air_quality {
             return
         }
 
-        if (iaqScore < 25) {
+        switch (true) {
+            case (iaqScore < 25):
+                eCO2Value = mapValue(iaqScore, 0, 24, 250, 399)
+                break
+            case (iaqScore < 101):
+                eCO2Value = mapValue(iaqScore, 25, 100, 400, 1000)
+                break
+            case (iaqScore < 151):
+                eCO2Value = mapValue(iaqScore, 101, 150, 1001, 2000)
+                break
+            case (iaqScore < 201):
+                eCO2Value = mapValue(iaqScore, 151, 200, 2001, 3500)
+                break
+            case (iaqScore < 351):
+                eCO2Value = mapValue(iaqScore, 201, 350, 3501, 5000)
+                break
+            case (iaqScore < 450):
+                eCO2Value = mapValue(iaqScore, 351, 450, 5001, 40000)
+                break
+            case (iaqScore > 450):
+                eCO2Value = mapValue(iaqScore, 451, 500, 40001, 100000)
+                break
+        }
+
+        /*if (iaqScore < 25) {
             // eCO2 in range 250-400ppm
             //eCO2Value = Math.trunc(Math.map(iaqScore, 0, 24, 250, 399))
             eCO2Value = mapValue(iaqScore, 0, 24, 250, 399)
@@ -2340,11 +2364,11 @@ namespace kitronik_air_quality {
             // eCO2 > 40000ppm
             //eCO2Value = Math.trunc(Math.map(iaqScore, 451, 500, 40001, 100000))
             eCO2Value = mapValue(iaqScore, 451, 500, 40001, 100000)
-        }
+        }*/
 
         eCO2Value = Math.trunc(eCO2Value)
 
-        /*let humidityFactor = 0
+        let humidityFactor = 0
         let temperatureFactor = 0
         let combinedFactor = 0
         // Adjust eCO2Value for humidity greater than the baseline (40%)
@@ -2359,7 +2383,7 @@ namespace kitronik_air_quality {
         }
         else if (temperatureOffset > 0) {
             eCO2Value = Math.trunc(eCO2Value * (((temperatureReading - ambientTemperature) / ambientTemperature) + 1))
-        }*/
+        }
 
         // If measurements are taking place rapidly, breath detection is possible due to the sudden increase in humidity (~7-10%)
         // If this increase happens within a 2000ms time window, 1200ppm is added to the eCO2 value
