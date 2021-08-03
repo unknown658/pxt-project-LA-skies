@@ -1714,7 +1714,6 @@ namespace kitronik_air_quality {
     let measureTime = 0
     let prevMeasureTime = 0
 
-
     let adcRawTemperature = 0    // adc reading of raw temperature
     let adcRawPressure = 0       // adc reading of raw pressure
     let adcRawHumidity = 0       // adc reading of raw humidity
@@ -1738,32 +1737,12 @@ namespace kitronik_air_quality {
     export function calcTemperature(tempADC: number): void {
         prevTemperature = temperatureReading
 
-        //var1 = (tempADC >> 3) - (PAR_T1 << 1)
-        var1 = (tempADC >> 3)
-        var2 = (PAR_T1 << 1)
-        var1 = var1 - var2
-
-        //var2 = (var1 * PAR_T2) >> 11
-        var4 = (var1 * PAR_T2)
-        var2 = var4 >> 11
-
-        //var3 = ((((var1 >> 1) * (var1 >> 1)) >> 12) * (PAR_T3 << 4)) >> 14
-        var1 = (var1 >> 1)
-        var4 = (var1 * var1)
-        var4 = (var4 >> 12)
-        var5 = (PAR_T3 << 4)
-        var1 = (var4 * var5)
-        var3 = var1 >> 14
-
+        var1 = (tempADC >> 3) - (PAR_T1 << 1)
+        var2 = (var1 * PAR_T2) >> 11
+        var3 = ((((var1 >> 1) * (var1 >> 1)) >> 12) * (PAR_T3 << 4)) >> 14
         t_fine = var2 + var3
         let newAmbTemp = ((t_fine * 5) + 128) >> 8
         temperatureReading = newAmbTemp / 100     // Convert to floating point with 2 dp
-
-        var1 = 0
-        var2 = 0
-        var3 = 0
-        var4 = 0
-        var5 = 0
 
         // Change position in the ambPrevTemps[] array ready for next reading to be stored, overwriting the previous one in that position
         if (ambTempFlag == false) {
@@ -1780,55 +1759,23 @@ namespace kitronik_air_quality {
                 ambTempFlag = true      // Set flag to show there are now 60 previous temperature readings so the average can now be calculated
             }
         }
+
+        var1 = 0
+        var2 = 0
+        var3 = 0
     }
 
     // Pressure compensation calculation: rawADC to Pascals (integer)
     export function intCalcPressure(pressureADC: number): void {
-        //var1 = (t_fine >> 1) - 64000
-        var1 = (t_fine >> 1)
-        var1 = (var1 - 64000)
-
-        //var2 = ((((var1 >> 2) * (var1 >> 2)) >> 11) * PAR_P6) >> 2
-        var3 = (var1 >> 2)
-        var3 = (var3 * var3)
-        var3 = (var3 >> 11)
-        var3 = (var3 * PAR_P6)
-        var2 = (var3 >> 2)
-
-        //var2 = var2 + ((var1 * PAR_P5) << 1)
-        var3 = (var1 * PAR_P5)
-        var3 = (var3 << 1)
-        var2 = (var2 + var3)
-
-        //var2 = (var2 >> 2) + (PAR_P4 << 16)
-        var3 = (var2 >> 2)
-        var4 = (PAR_P4 << 16)
-        var2 = (var3 + var4)
-
-        //var1 = (((((var1 >> 2) * (var1 >> 2)) >> 13) * (PAR_P3 << 5)) >> 3) + ((PAR_P2 * var1) >> 1)
-        var3 = (var1 >> 2)
-        var3 = (var3 * var3)
-        var3 = (var3 >> 13)
-        var4 = (PAR_P3 << 5)
-        var4 = (var3 * var4)
-        var4 = (var4 >> 3)
-        var5 = (PAR_P2 * var1)
-        var5 = (var5 >> 1)
-        var1 = (var4 + var5)
-
+        var1 = (t_fine >> 1) - 64000
+        var2 = ((((var1 >> 2) * (var1 >> 2)) >> 11) * PAR_P6) >> 2
+        var2 = var2 + ((var1 * PAR_P5) << 1)
+        var2 = (var2 >> 2) + (PAR_P4 << 16)
+        var1 = (((((var1 >> 2) * (var1 >> 2)) >> 13) * (PAR_P3 << 5)) >> 3) + ((PAR_P2 * var1) >> 1)
         var1 = var1 >> 18
-
-        //var1 = ((32768 + var1) * PAR_P1) >> 15
-        var1 = (32768 + var1)
-        var1 = (var1 * PAR_P1)
-        var1 = (var1 >> 15)
-
+        var1 = ((32768 + var1) * PAR_P1) >> 15
         pressureReading = 1048576 - pressureADC
-
-        //pressureReading = ((pressureReading - (var2 >> 12)) * 3125)
-        var4 = (var2 >> 12)
-        var4 = (pressureReading - var4)
-        pressureReading = (var4 * 3125)
+        pressureReading = ((pressureReading - (var2 >> 12)) * 3125)
 
         if (pressureReading >= (1 << 30)) {
             pressureReading = Math.idiv(pressureReading, var1) << 1
@@ -1837,34 +1784,14 @@ namespace kitronik_air_quality {
             pressureReading = Math.idiv((pressureReading << 1), var1)
         }
 
-        //var1 = (PAR_P9 * (((pressureReading >> 3) * (pressureReading >> 3)) >> 13)) >> 12
-        var4 = (pressureReading >> 3)
-        var4 = (var4 * var4)
-        var4 = (var4 >> 13)
-        var5 = (PAR_P9 * var4)
-        var1 = (var5 >> 12)
-
-        //var2 = ((pressureReading >> 2) * PAR_P8) >> 13
-        var4 = (pressureReading >> 2)
-        var4 = (var4 * PAR_P8)
-        var2 = (var4 >> 13)
-
-        //var3 = ((pressureReading >> 8) * (pressureReading >> 8) * (pressureReading >> 8) * PAR_P10) >> 17
-        var4 = (pressureReading >> 8)
-        var5 = (var4 * var4 * var4 * PAR_P10)
-        var3 = (var5 >> 17)
-
-        //pressureReading = pressureReading + ((var1 + var2 + var3 + (PAR_P7 << 7)) >> 4)
-        var4 = (PAR_P7 << 7)
-        var5 = (var1 + var2 + var3 + var4)
-        var5 = (var5 >> 4)
-        pressureReading = (pressureReading + var5)
+        var1 = (PAR_P9 * (((pressureReading >> 3) * (pressureReading >> 3)) >> 13)) >> 12
+        var2 = ((pressureReading >> 2) * PAR_P8) >> 13
+        var3 = ((pressureReading >> 8) * (pressureReading >> 8) * (pressureReading >> 8) * PAR_P10) >> 17
+        pressureReading = pressureReading + ((var1 + var2 + var3 + (PAR_P7 << 7)) >> 4)
 
         var1 = 0
         var2 = 0
         var3 = 0
-        var4 = 0
-        var5 = 0
     }
 
     // Humidity compensation calculation: rawADC to % (integer)
@@ -1872,50 +1799,14 @@ namespace kitronik_air_quality {
     export function intCalcHumidity(humidADC: number, tempScaled: number): void {
         prevHumidity = humidityReading
 
-        //var1 = humidADC - (PAR_H1 << 4) - (Math.idiv((tempScaled * PAR_H3), 100) >> 1)
-        var4 = (tempScaled * PAR_H3)
-        var4 = Math.idiv(var4, 100)
-        var4 = (var4 >> 1)
-        var5 = (PAR_H1 << 4)
-        var1 = (humidADC - var5 - var4)
-
-        //var2 = (PAR_H2 * (Math.idiv((tempScaled * PAR_H4), 100) + Math.idiv(((tempScaled * (Math.idiv((tempScaled * PAR_H5), 100))) >> 6), 100) + ((1 << 14)))) >> 10
-        var3 = (tempScaled * PAR_H4)
-        var3 = Math.idiv(var3, 100)
-        var4 = (tempScaled * PAR_H5)
-        var4 = Math.idiv(var4, 100)
-        var4 = (tempScaled * var4)
-        var4 = (var4 >> 6)
-        var4 = Math.idiv(var4, 100)
-        var5 = (1 << 14)
-        var6 = (var3 + var4 + var5)
-        var6 = (PAR_H2 * var6)
-        var2 = (var6 >> 10)
-
+        var1 = humidADC - (PAR_H1 << 4) - (Math.idiv((tempScaled * PAR_H3), 100) >> 1)
+        var2 = (PAR_H2 * (Math.idiv((tempScaled * PAR_H4), 100) + Math.idiv(((tempScaled * (Math.idiv((tempScaled * PAR_H5), 100))) >> 6), 100) + ((1 << 14)))) >> 10
         var3 = var1 * var2
-
-        //var4 = ((PAR_H6 << 7) + (Math.idiv((tempScaled * PAR_H7), 100))) >> 4
-        var1 = (PAR_H6 << 7)
-        var2 = (tempScaled * PAR_H7)
-        var2 = Math.idiv(var2, 100)
-        var2 = (var1 + var2)
-        var4 = (var2 >> 4)
-
-        //var5 = ((var3 >> 14) * (var3 >> 14)) >> 10
-        var1 = (var3 >> 14)
-        var1 = (var1 * var1)
-        var5 = (var1 >> 10)
-
+        var4 = ((PAR_H6 << 7) + (Math.idiv((tempScaled * PAR_H7), 100))) >> 4
+        var5 = ((var3 >> 14) * (var3 >> 14)) >> 10
         var6 = (var4 * var5) >> 1
-
         humidityReading = (var3 + var6) >> 12
-
-        //humidityReading = (((var3 + var6) >> 10) * (1000)) >> 12
-        var1 = (var3 + var6)
-        var1 = (var1 >> 10)
-        var2 = (var1 * 1000)
-        humidityReading = (var2 >> 12)
-
+        humidityReading = (((var3 + var6) >> 10) * (1000)) >> 12
         humidityReading = Math.idiv(humidityReading, 1000)
 
         var1 = 0
@@ -1931,31 +1822,12 @@ namespace kitronik_air_quality {
     // 'targetTemp' is the desired temperature of the hot plate in degC (in range 200 to 400)
     // Note: Heating duration also needs to be specified for each heating step in 'gas_wait' registers
     export function intConvertGasTargetTemp(ambientTemp: number, targetTemp: number): number {
-        //var1 = Math.idiv((ambientTemp * PAR_G3), 1000) << 8    // Divide by 1000 as we have ambientTemp in pre-degC format (i.e. 2500 rather than 25.00 degC)
-        var2 = (ambientTemp * PAR_G3)
-        var2 = Math.idiv(var2, 1000)
-        var1 = (var2 << 8)
-
-        //var2 = (PAR_G1 + 784) * Math.idiv((Math.idiv(((PAR_G2 + 154009) * targetTemp * 5), 100) + 3276800), 10)
-        var3 = (PAR_G1 + 784)
-        var4 = (PAR_G2 + 154009)
-        var4 = (var4 * targetTemp * 5)
-        var4 = Math.idiv(var4, 100)
-        var4 = (var4 + 3276800)
-        var5 = Math.idiv(var4, 10)
-        var2 = (var3 + var5)
-
+        var1 = Math.idiv((ambientTemp * PAR_G3), 1000) << 8    // Divide by 1000 as we have ambientTemp in pre-degC format (i.e. 2500 rather than 25.00 degC)
+        var2 = (PAR_G1 + 784) * Math.idiv((Math.idiv(((PAR_G2 + 154009) * targetTemp * 5), 100) + 3276800), 10)
         var3 = var1 + (var2 >> 1)
-
         var4 = Math.idiv(var3, (RES_HEAT_RANGE + 4))
-
         var5 = (131 * RES_HEAT_VAL) + 65536                 // Target heater resistance in Ohms
-
-        //let resHeatX100 = ((Math.idiv(var4, var5) - 250) * 34)
-        var1 = Math.idiv(var4, var5)
-        var1 = (var1 - 250)
-        let resHeatX100 = (var1 * 34)
-
+        let resHeatX100 = ((Math.idiv(var4, var5) - 250) * 34)
         let resHeat = Math.idiv((resHeatX100 + 50), 100)
 
         var1 = 0
@@ -1975,10 +1847,10 @@ namespace kitronik_air_quality {
         var2 = 4096 + var2
         let calcGasRes = Math.idiv((10000 * var1), var2)
 
+        gasResistance = calcGasRes * 100
+
         var1 = 0
         var2 = 0
-
-        gasResistance = calcGasRes * 100
     }
 
     // Initialise the BME688, establishing communication, entering initial T, P & H oversampling rates, setup filter and do a first data reading (won't return gas)
