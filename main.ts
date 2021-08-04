@@ -2309,44 +2309,37 @@ namespace kitronik_air_quality {
         if (iaqScore < 25) {
             // eCO2 in range 250-400ppm
             //eCO2Value = Math.trunc(Math.map(iaqScore, 0, 24, 250, 399))
-            //eCO2Value = mapValue(iaqScore, 0, 24, 250, 399)
-            eCO2Value = 250 + (((iaqScore - 0) / (24 - 0)) * (399 - 250))
+            eCO2Value = mapValue(iaqScore, 0, 24, 250, 399)
         }
         else if (iaqScore < 101) {
             // eCO2 in range 400-1000ppm
             //eCO2Value = Math.trunc(Math.map(iaqScore, 25, 100, 400, 1000))
-            //eCO2Value = mapValue(iaqScore, 25, 100, 400, 1000)
-            eCO2Value = 400 + (((iaqScore - 25) / (100 - 25)) * (1000 - 400))
+            eCO2Value = mapValue(iaqScore, 25, 100, 400, 1000)
         }
         else if (iaqScore < 151) {
             // eCO2 in range 1000-2000ppm
             //eCO2Value = Math.trunc(Math.map(iaqScore, 101, 150, 1001, 2000))
-            //eCO2Value = mapValue(iaqScore, 101, 150, 1001, 2000)
-            eCO2Value = 1001 + (((iaqScore - 101) / (150 - 101)) * (2000 - 1001))
+            eCO2Value = mapValue(iaqScore, 101, 150, 1001, 2000)
         }
         else if (iaqScore < 201) {
             // eCO2 in range 2000-3500ppm
             //eCO2Value = Math.trunc(Math.map(iaqScore, 151, 200, 2001, 3500))
-            //eCO2Value = mapValue(iaqScore, 151, 200, 2001, 3500)
-            eCO2Value = 2001 + (((iaqScore - 151) / (200 - 151)) * (3500 - 2001))
+            eCO2Value = mapValue(iaqScore, 151, 200, 2001, 3500)
         }
         else if (iaqScore < 351) {
             // eCO2 in range 3500-5000ppm
             //eCO2Value = Math.trunc(Math.map(iaqScore, 201, 350, 3501, 5000))
-            //eCO2Value = mapValue(iaqScore, 201, 350, 3501, 5000)
-            eCO2Value = 3501 + (((iaqScore - 201) / (350 - 201)) * (5000 - 3501))
+            eCO2Value = mapValue(iaqScore, 201, 350, 3501, 5000)
         }
         else if (iaqScore < 450) {
             // eCO2 > eCO2 in range 5000-40000ppm
             //eCO2Value = Math.trunc(Math.map(iaqScore, 351, 450, 5001, 40000))
-            //eCO2Value = mapValue(iaqScore, 351, 450, 5001, 40000)
-            eCO2Value = 5001 + (((iaqScore - 351) / (450 - 351)) * (40000 - 5001))
+            eCO2Value = mapValue(iaqScore, 351, 450, 5001, 40000)
         }
         else if (iaqScore > 450) {
             // eCO2 > 40000ppm
             //eCO2Value = Math.trunc(Math.map(iaqScore, 451, 500, 40001, 100000))
-            //eCO2Value = mapValue(iaqScore, 451, 500, 40001, 100000)
-            eCO2Value = 40001 + (((iaqScore - 451) / (500 - 451)) * (100000 - 40001))
+            eCO2Value = mapValue(iaqScore, 451, 500, 40001, 100000)
         }
 
         eCO2Value = Math.trunc(eCO2Value)
